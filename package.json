@@ -1,0 +1,29 @@
+{
+  "name": "restle",
+  "version": "0.0.0",
+  "description": "Fast RESTful API engine.",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/dcslack/restle.git"
+  },
+  "keywords": [
+    "rest",
+    "api",
+    "express",
+    "node"
+  ],
+  "author": "Dylan Slack <dylanslack@gmail.com> (http://dylanslack.com/)",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/dcslack/restle/issues"
+  },
+  "homepage": "https://github.com/dcslack/restle",
+  "dependencies": {
+    "express": "^4.7.2",
+    "lodash": "^2.4.1"
+  }
+}
