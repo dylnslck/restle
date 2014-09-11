@@ -24,6 +24,7 @@
   "homepage": "https://github.com/dcslack/restle",
   "dependencies": {
     "express": "^4.7.2",
+    "i": "^0.3.2",
     "lodash": "^2.4.1"
   }
 }
