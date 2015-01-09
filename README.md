@@ -8,13 +8,14 @@ This framework is currently a side-project of mine, but I plan on extensively de
 and testing it eventually, maybe. As of now, the framework should not be used for any serious applications. However, 
 Restle has a near-zero learning curve, making it great for rapidly prototyping APIs.
 
-Getting started.
+Getting started
 ====
 
+
 ```
-npm install restle --save
-npm install express --save
-npm install mongoose --save
+$ npm install restle --save
+$ npm install express --save
+$ npm install mongoose --save
 ```
 
 ```javascript
