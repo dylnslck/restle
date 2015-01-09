@@ -36,17 +36,13 @@ mongoose.connect(url, options);
 app.listen(3000);
 ```
 
-Restle expects models to be defined via the following directory structure:
+Restle expects models to be defined via proper folders:
 
-.
-+-- app.js
-+-- /models
-|   +-- /post
-|       +-- schema.js
-|   +-- /comment
-|       +-- schema.js
-|   +-- /user
-|       +-- schema.js
+```
+/models/post/schema.js
+/models/comment/schema.js
+/models/user/schema.js
+```
 
 A schema is a simple exported object:
 
