@@ -6,35 +6,25 @@ Restle is an incredibly lightweight *(and unstable)* RESTful API engine.
 Restle currently supports properly sideloading data for [Ember-Data](http://emberjs.com/api/data/).
 This framework is currently a side-project of mine, but I plan on extensively developing
 and testing it eventually, maybe. As of now, the framework should not be used for any serious applications. However, 
-Restle has a near-zero learning curve, making it great for rapidly prototyping APIs.
-
+Restle has a near-zero learning curve, making it great for rapidly prototyping APIs. Restle uses Mongoose as its ODM, so only MongoDB is supported right now.
+ 
 Getting started
 ====
 
 
 ```
 $ npm install restle --save
-$ npm install express --save
-$ npm install mongoose --save
 ```
 
 ```javascript
-var mongoose = require('mongoose');
-var express = require('express');
-var app = express();
+var options = {
+  verbose: true,
+  modelsRootPath: __dirname + '/models',
+  port: 3000,
+  databaseUrl: 'mongodb://heroku_app33066146:16aluo3sodirk8u7kkojabvu03@ds031531.mongolab.com:31531/heroku_app33066146'
+};
 
-// Initialize Restle with modelsRootPath,
-// i.e. the path where your models are defined.
-var restle = require('restle')(app, {
-  modelsRootPath: __dirname + '/models'
-});
-
-// Connect to the database.
-var url = 'mongodb://....';
-mongoose.connect(url, options);
-
-// Listen on some port.
-app.listen(3000);
+require('restle')({options});
 ```
 
 Restle expects models to be defined via proper folders:
