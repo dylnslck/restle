@@ -7,7 +7,7 @@ Restle currently supports properly sideloading data for [Ember-Data](http://embe
 This framework is currently a side-project of mine, but I plan on extensively developing
 and testing it eventually, maybe. As of now, the framework should not be used for any serious applications. However, 
 Restle has a near-zero learning curve, making it great for rapidly prototyping APIs. Restle uses Mongoose as its ODM, so only MongoDB is supported right now.
- 
+
 Getting started
 ====
 
@@ -21,10 +21,10 @@ var options = {
   verbose: true,
   modelsRootPath: __dirname + '/models',
   port: 3000,
-  databaseUrl: 'mongodb://heroku_app33066146:16aluo3sodirk8u7kkojabvu03@ds031531.mongolab.com:31531/heroku_app33066146'
+  databaseUrl: 'mongodb://......''
 };
 
-require('restle')({options});
+require('restle')(options);
 ```
 
 Restle expects models to be defined via proper folders:
