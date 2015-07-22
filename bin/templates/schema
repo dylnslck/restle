@@ -1,0 +1,9 @@
+var restle = require('restle');
+var schema = {
+  field1: restle.attr('string', {
+    protect: true,
+  }),
+  field2: restle.attr('boolean')
+};
+
+restle.registerSchema('{model}', schema);

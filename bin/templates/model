@@ -1,0 +1,2 @@
+var restle = require('restle');
+var model = restle.registerModel('{model}');

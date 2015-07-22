@@ -1,0 +1,30 @@
+#!/usr/bin/env node
+
+var program = require('commander');
+var command, args;
+ 
+program
+  .version('0.0.1')
+  .arguments('<cmd> [args...]')
+  .action(function (cmd, argss) {
+    command = cmd;
+    args = argss;
+  });
+ 
+program.parse(process.argv);
+
+if (!command) {
+  // TODO: Better error handling.
+  console.error('No command given!');
+  process.exit(1);
+}
+
+var commands = require('./cli/commands');
+
+if (!commands[command]) {
+  // TODO: Better error handling.
+  console.error('Invalid command given!');
+  process.exit(1);
+} else {
+  require('./cli/commands')[command](args);
+}

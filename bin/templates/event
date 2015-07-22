@@ -1,0 +1,7 @@
+var restle = require('restle');
+
+restle.model('{model}').on('{event}', {event});
+
+function {event} ({args}) {
+
+}
