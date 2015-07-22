@@ -21,9 +21,9 @@ const restle = new Restle({
 });
 
 const userSchema: {
-  species: { attr: 'string' },
-  bones: { hasMany: 'bone' },
-  owner: { belongsTo: 'person' },
+  name: { attr: 'string' },
+  articles: { hasMany: 'article' },
+  company: { belongsTo: 'company' },
 };
 
 restle.register('user', userSchema);
