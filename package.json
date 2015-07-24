@@ -1,6 +1,6 @@
 {
   "name": "restle",
-  "version": "0.2.1",
+  "version": "0.2.3",
   "description": "JSON API engine.",
   "main": "dist/lib/index.js",
   "repository": {
@@ -48,7 +48,7 @@
   },
   "scripts": {
     "clean": "rimraf dist coverage",
-    "prepublish": "npm run clean && npm run test",
+    "prepublish": "npm run clean && npm run build",
     "build": "npm run build:lib && npm run build:test",
     "build:lib": "mkdirp dist/lib && babel lib --out-dir dist/lib",
     "build:test": "mkdirp dist/test && babel test --out-dir dist/test",
