@@ -39,7 +39,7 @@ test('Restle integration tests', (t) => {
         assert.error(err, 'response status should be 200');
         assert.deepEqual(body, {
           links: {
-            self: `http://localhost:1337/api/people`,
+            self: `http://localhost:1337/api/people/`,
           },
           data: [],
         }, 'response body should look good with a links and data members');
@@ -117,7 +117,7 @@ test('Restle integration tests', (t) => {
               name: 'Bobby Jones',
             },
             links: {
-              self: `http://localhost:1337/api/people/${body.data.id}`,
+              self: `http://localhost:1337/api/people/${body.data.id}/`,
             },
           },
         }, 'the response body should have the proper links and primary data with attributes');
@@ -149,7 +149,7 @@ test('Restle integration tests', (t) => {
               species: 'Dog',
             },
             links: {
-              self: `http://localhost:1337/api/animals/${body.data.id}`,
+              self: `http://localhost:1337/api/animals/${body.data.id}/`,
             },
           },
         }, 'the response body should have the proper links and primary data with attributes');
@@ -197,7 +197,7 @@ test('Restle integration tests', (t) => {
                   },
                 },
                 links: {
-                  self: `http://localhost:1337/api/people/${bodyPerson.data.id}`,
+                  self: `http://localhost:1337/api/people/${bodyPerson.data.id}/`,
                 },
               },
             });
@@ -288,7 +288,7 @@ test('Restle integration tests', (t) => {
         assert.error(err, 'get /people should give 200');
         assert.deepEqual(body, {
           links: {
-            self: 'http://localhost:1337/api/people'
+            self: 'http://localhost:1337/api/people/'
           },
           data: [{
             type: 'person',
@@ -297,7 +297,7 @@ test('Restle integration tests', (t) => {
               name: 'Bobby Jones',
             },
             links: {
-              self: `http://localhost:1337/api/people/${res.body.data[0].id}`,
+              self: `http://localhost:1337/api/people/${res.body.data[0].id}/`,
             },
           }, {
             type: 'person',
@@ -306,13 +306,13 @@ test('Restle integration tests', (t) => {
               name: 'Billy Smith'
             },
             links: {
-              self: `http://localhost:1337/api/people/${res.body.data[1].id}`,
+              self: `http://localhost:1337/api/people/${res.body.data[1].id}/`,
             },
             relationships: {
               pets: {
                 data: [{
                   type: 'animal',
-                  id: `${res.body.data[1].relationships.pets.data[0].id}`,
+                  id: `${res.body.data[1].relationships.pets.data[0].id}/`,
                 }],
                 links: {
                   self: `http://localhost:1337/api/people/${res.body.data[1].id}/relationships/pets`,
@@ -341,22 +341,9 @@ test('Restle integration tests', (t) => {
               },
             },
           }))
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
+          .expect(204)
           .end((newErr, newRes) => {
-            const newBody = newRes.body;
-            assert.deepEqual(newBody, {
-              data: {
-                type: 'person',
-                id: `${id}`,
-                attributes: {
-                  name: 'New Name',
-                },
-                links: {
-                  self: `http://localhost:1337/api/people/${id}`,
-                },
-              },
-            }, 'the resource object should have new attributes');
+            assert.error(newErr, 'PATCH should give 204');
             assert.end();
           });
       });
@@ -410,7 +397,7 @@ test('Restle integration tests', (t) => {
             const newBody = newRes.body;
             assert.deepEqual(newBody, {
               links: {
-                self: `http://localhost:1337/api/people/${id}`,
+                self: `http://localhost:1337/api/people/${id}/`,
               },
               data: {
                 type: 'person',
@@ -602,7 +589,7 @@ test('Restle integration tests', (t) => {
                 assert.error(secondAnimalsErr, 'GET /animals should give 200 and correct media type');
                 assert.deepEqual(secondAnimalsBody, {
                   links: {
-                    self: 'http://localhost:1337/api/animals',
+                    self: 'http://localhost:1337/api/animals/',
                   },
                   data: [],
                 }, 'the animals body has correct links and empty data');
