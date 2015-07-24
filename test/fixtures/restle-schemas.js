@@ -6,6 +6,7 @@ export default {
 
   animal: {
     species: { attr: 'string' },
+    color: { attr: 'string' },
     bones: { hasMany: 'bone' },
     owner: { belongsTo: 'person' },
   },

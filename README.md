@@ -4,9 +4,10 @@ restle
 Restle is a lightweight *(and unstable)* [JSON API](http://jsonapi.org) compatible with [Ember Data](http://emberjs.com/api/data/). This is alpha software and not recommended for use in
 production code.
 
+Not all features in the JSON API specification are implemented yet: fields, voluntary inclusion, and some other small things.
+
 Getting started
 ====
-
 
 ```
 $ npm install restle --save

@@ -1,6 +1,6 @@
 {
   "name": "restle",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "JSON API engine.",
   "main": "dist/lib/index.js",
   "repository": {
@@ -43,7 +43,7 @@
     "prettyjson": "^1.1.2",
     "rimraf": "^2.4.0",
     "supertest": "^1.0.1",
-    "tap-dot": "^1.0.0",
+    "tap-spec": "^4.0.2",
     "tapes": "^2.0.0"
   },
   "scripts": {

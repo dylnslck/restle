@@ -594,9 +594,136 @@ test('Restle integration tests', (t) => {
                   data: [],
                 }, 'the animals body has correct links and empty data');
                 assert.end();
-                restle.disconnect();
               });
           });
+      });
+  });
+
+  t.test('POST /animals with species cat, dog, zebra', (assert) => {
+    request.post('/animals')
+      .set('Content-Type', 'application/vnd.api+json')
+      .send(JSON.stringify({
+        data: {
+          type: 'animal',
+          attributes: {
+            species: 'Cat',
+            color: 'White',
+          },
+        },
+      }))
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(201)
+      .end((catErr, catRes) => {
+        assert.error(catErr, 'successfully created cat should give 201');
+
+        request.post('/animals')
+          .set('Content-Type', 'application/vnd.api+json')
+          .send(JSON.stringify({
+            data: {
+              type: 'animal',
+              attributes: {
+                species: 'Dog',
+                color: 'Black',
+              },
+            },
+          }))
+          .expect('Content-Type', /application\/vnd\.api\+json/)
+          .expect(201)
+          .end((dogErr, dogRes) => {
+            assert.error(dogErr, 'successfully created dog should give 201');
+
+            request.post('/animals')
+              .set('Content-Type', 'application/vnd.api+json')
+              .send(JSON.stringify({
+                data: {
+                  type: 'animal',
+                  attributes: {
+                    species: 'Zebra',
+                    color: 'Striped',
+                  },
+                },
+              }))
+              .expect('Content-Type', /application\/vnd\.api\+json/)
+              .expect(201)
+              .end((zebraErr, zebraRes) => {
+                assert.error(zebraErr, 'successfully created cat should give 201');
+                assert.end();
+              });
+          });
+      });
+  });
+
+  // TODO: deep equal
+  t.test('GET /animals?page[offset]=1&page[limit]=2', (assert) => {
+    request.get('/animals?page[offset]=1&page[limit]=2')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?page[offset]=1&page[limit]=1 should give 200');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?sort=species,-color', (assert) => {
+    request.get('/animals?sort=species')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?sort=species');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?sort=-species,-color', (assert) => {
+    request.get('/animals?sort=-species')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?sort=-species');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?species=Dog', (assert) => {
+    request.get('/animals?species=Dog')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?species=Dog');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?species=Dog&color=purple', (assert) => {
+    request.get('/animals?species=Dog&color=purple')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?species=Dog&color=purple');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?fields[animal]=color', (assert) => {
+    request.get('/animals?fields[animal]=color')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?fields[animal]=color');
+        assert.end();
+        restle.disconnect();
       });
   });
 
