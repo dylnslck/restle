@@ -36,6 +36,7 @@
     "restle": "./bin/restle"
   },
   "devDependencies": {
+    "babel-eslint": "^4.0.5",
     "blue-tape": "^0.1.10",
     "eslint": "^0.24.1",
     "mkdirp": "^0.5.1",
