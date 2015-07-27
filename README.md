@@ -1,6 +1,10 @@
 restle
 ======
 
+[![Build Status](https://travis-ci.org/dcslack/restle.svg)](https://travis-ci.org/dcslack/restle)
+[![npm version](https://badge.fury.io/js/restle.svg)](http://badge.fury.io/js/restle)
+[![Coverage Status](https://coveralls.io/repos/dcslack/restle/badge.svg?branch=master&service=github)](https://coveralls.io/github/dcslack/restle?branch=master)
+
 Restle is a lightweight *(and unstable)* [JSON API](http://jsonapi.org) engine compatible with [Ember Data](http://emberjs.com/api/data/). This is alpha software and not recommended for use in
 production code.
 
@@ -9,7 +13,7 @@ Not all features in the JSON API specification are implemented yet: fields, volu
 Getting started
 ====
 
-```
+```sh
 $ npm install restle --save
 ```
 

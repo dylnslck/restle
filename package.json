@@ -41,7 +41,6 @@
     "mkdirp": "^0.5.1",
     "mocha": "^2.2.5",
     "mongojs": "^1.0.2",
-    "prettyjson": "^1.1.2",
     "rimraf": "^2.4.0",
     "supertest": "^1.0.1",
     "tap-spec": "^4.0.2",
