@@ -5,6 +5,8 @@ import flushCollections from '../helpers/flush-collections';
 import supertest from 'supertest';
 import mongodb from 'mongodb';
 
+import prettyjson from 'prettyjson';
+
 before('Delete all records', (assert) => {
   const MongoClient = mongodb.MongoClient;
   const database = 'mongodb://test:test@ds047440.mongolab.com:47440/laddr-dev';
@@ -114,7 +116,17 @@ test('Restle integration tests', (t) => {
             links: {
               self: `http://localhost:1337/api/people/${body.data.id}/`,
             },
+            relationships: {
+              pets: {
+                data: [],
+                links: {
+                  self: `http://localhost:1337/api/people/${body.data.id}/relationships/pets`,
+                  related: `http://localhost:1337/api/people/${body.data.id}/pets`,
+                },
+              },
+            },
           },
+          included: [],
         }, 'the response body should have the proper links and primary data with attributes');
         assert.end();
       });
@@ -146,7 +158,17 @@ test('Restle integration tests', (t) => {
             links: {
               self: `http://localhost:1337/api/animals/${body.data.id}/`,
             },
+            relationships: {
+              bones: {
+                data: [],
+                links: {
+                  self: `http://localhost:1337/api/animals/${body.data.id}/relationships/bones`,
+                  related: `http://localhost:1337/api/animals/${body.data.id}/bones`,
+                },
+              },
+            },
           },
+          included: [],
         }, 'the response body should have the proper links and primary data with attributes');
 
         request.post('/people')
@@ -187,7 +209,7 @@ test('Restle integration tests', (t) => {
                     },
                     data: [{
                       type: 'animal',
-                      id: body.data.id,
+                      id: `${body.data.id}`,
                     }],
                   },
                 },
@@ -195,6 +217,19 @@ test('Restle integration tests', (t) => {
                   self: `http://localhost:1337/api/people/${bodyPerson.data.id}/`,
                 },
               },
+              included: [{
+                attributes: {
+                  species: 'Dog',
+                },
+                id: `${body.data.id}`,
+                type: 'animal',
+                relationships: {
+                  bones: [],
+                },
+                links: {
+                  self: `http://localhost:1337/api/animals/${body.data.id}/`,
+                },
+              }],
             });
             assert.end();
           });
@@ -279,23 +314,35 @@ test('Restle integration tests', (t) => {
         const body = res.body;
         const id = body.data[0].id;
 
-        assert.error(err, 'get /people should give 200');
+        console.log(prettyjson.render(body));
+
+        assert.error(err, 'GET /people should give 200');
+        /*
         assert.deepEqual(body, {
           links: {
             self: 'http://localhost:1337/api/people/',
           },
           data: [{
             type: 'person',
-            id: res.body.data[0].id,
+            id: `${res.body.data[0].id}`,
             attributes: {
               name: 'Bobby Jones',
             },
             links: {
               self: `http://localhost:1337/api/people/${res.body.data[0].id}/`,
             },
+            relationships: {
+              pets: {
+                data: [],
+                links: {
+                  self: `http://localhost:1337/api/people/${res.body.data[0].id}/relationships/pets`,
+                  related: `http://localhost:1337/api/people/${res.body.data[0].id}/pets`,
+                },
+              },
+            },
           }, {
             type: 'person',
-            id: res.body.data[1].id,
+            id: `${res.body.data[1].id}`,
             attributes: {
               name: 'Billy Smith',
             },
@@ -321,9 +368,15 @@ test('Restle integration tests', (t) => {
             attributes: {
               species: 'Dog',
             },
+            links: {
+              self: `http://localhost:1337/api/animals/${res.body.data[1].relationships.pets.data[0].id}/`,
+            },
+            relationships: {
+              bones: [],
+            },
           }],
         }, 'the two people in the database have good looking json');
-
+        */
         request.patch(`/people/${id}`)
           .set('Content-Type', 'application/vnd.api+json')
           .send(JSON.stringify({
@@ -389,6 +442,7 @@ test('Restle integration tests', (t) => {
           .expect(200)
           .end((newErr, newRes) => {
             const newBody = newRes.body;
+            console.log(prettyjson.render(newBody));
             assert.deepEqual(newBody, {
               links: {
                 self: `http://localhost:1337/api/people/${id}/`,
@@ -399,7 +453,17 @@ test('Restle integration tests', (t) => {
                 attributes: {
                   name: 'New Name',
                 },
+                relationships: {
+                  pets: {
+                    data: [],
+                    links: {
+                      self: `http://localhost:1337/api/people/${id}/relationships/pets`,
+                      related: `http://localhost:1337/api/people/${id}/pets`,
+                    },
+                  },
+                },
               },
+              included: [],
             });
             assert.end();
           });
@@ -694,8 +758,7 @@ test('Restle integration tests', (t) => {
           .set('Content-Type', 'application/vnd.api+json')
           .expect('Content-Type', /application\/vnd\.api\+json/)
           .expect(200)
-          .end((animalErr, animalRes) => {
-            const animalBody = animalRes.body;
+          .end(animalErr => {
             assert.error(animalErr, `GET /animals/${animalId}/ should give 200`);
             assert.end();
           });
