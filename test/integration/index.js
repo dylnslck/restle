@@ -2,7 +2,6 @@ import test from 'tape';
 import before from 'tape';
 import restle from '../helpers/start-app';
 import supertest from 'supertest';
-import prettyjson from 'prettyjson';
 import mongojs from 'mongojs';
 
 const collections = ['animals', 'people', 'users'];
@@ -11,14 +10,14 @@ const db = mongojs('mongodb://laddr:pook!00FF@ds047440.mongolab.com:47440/laddr-
 before('Delete all records', (assert) => {
   restle.on('ready', () => {
     console.log(`API located at http://localhost:1337/api`);
-    db.animals.remove((err, docs) => {
-      assert.error(err, 'no errors when removing animals collection');
+    db.animals.remove(animalsErr => {
+      assert.error(animalsErr, 'no errors when removing animals collection');
 
-      db.people.remove((err, docs) => {
-        assert.error(err, 'no errors when removing people collection');
+      db.people.remove(peopleErr => {
+        assert.error(peopleErr, 'no errors when removing people collection');
 
-        db.users.remove((err, docs) => {
-          assert.error(err, 'no errors when removing users collection');
+        db.users.remove(usersErr => {
+          assert.error(usersErr, 'no errors when removing users collection');
           assert.end();
         });
       });
@@ -283,12 +282,11 @@ test('Restle integration tests', (t) => {
       .end((err, res) => {
         const body = res.body;
         const id = body.data[0].id;
-        const attributes = body.data[0].attributes;
 
         assert.error(err, 'get /people should give 200');
         assert.deepEqual(body, {
           links: {
-            self: 'http://localhost:1337/api/people/'
+            self: 'http://localhost:1337/api/people/',
           },
           data: [{
             type: 'person',
@@ -303,7 +301,7 @@ test('Restle integration tests', (t) => {
             type: 'person',
             id: res.body.data[1].id,
             attributes: {
-              name: 'Billy Smith'
+              name: 'Billy Smith',
             },
             links: {
               self: `http://localhost:1337/api/people/${res.body.data[1].id}/`,
@@ -342,7 +340,7 @@ test('Restle integration tests', (t) => {
             },
           }))
           .expect(204)
-          .end((newErr, newRes) => {
+          .end(newErr => {
             assert.error(newErr, 'PATCH should give 204');
             assert.end();
           });
@@ -435,7 +433,7 @@ test('Restle integration tests', (t) => {
             assert.deepEqual(firstBody, {
               links: {
                 self: `http://localhost:1337/api/people/${firstId}/relationships/pets`,
-                related: `http://localhost:1337/api/people/${firstId}/pets`
+                related: `http://localhost:1337/api/people/${firstId}/pets`,
               },
               data: [],
             }, 'first relationships response has valid links and empty data array');
@@ -450,7 +448,7 @@ test('Restle integration tests', (t) => {
                 assert.deepEqual(secondBody, {
                   links: {
                     self: `http://localhost:1337/api/people/${secondId}/relationships/pets`,
-                    related: `http://localhost:1337/api/people/${secondId}/pets`
+                    related: `http://localhost:1337/api/people/${secondId}/pets`,
                   },
                   data: [{
                     type: 'animal',
@@ -480,7 +478,7 @@ test('Restle integration tests', (t) => {
           .send(JSON.stringify({
             data: [],
           }))
-          .end((relationshipErr, relationshipRes) => {
+          .end(relationshipErr => {
             assert.error(relationshipErr, 'PATCH /people/:id/relationships/pets should give 204');
             assert.end();
           });
@@ -517,7 +515,7 @@ test('Restle integration tests', (t) => {
                   type: 'animal',
                 }],
               }))
-              .end((relationshipErr, relationshipRes) => {
+              .end(relationshipErr => {
                 assert.error(relationshipErr, 'POST /people/:id/relationships/pets should give 204');
                 assert.end();
               });
@@ -555,7 +553,7 @@ test('Restle integration tests', (t) => {
                   type: 'animal',
                 }],
               }))
-              .end((relationshipErr, relationshipRes) => {
+              .end(relationshipErr => {
                 assert.error(relationshipErr, 'DELETE /people/:id/relationships/pets should give 204');
                 assert.end();
               });
@@ -577,7 +575,7 @@ test('Restle integration tests', (t) => {
         request.delete(`/animals/${animalId}`)
           .set('Content-Type', 'application/vnd.api+json')
           .expect(204)
-          .end((animalErr, animalRes) => {
+          .end(animalErr => {
             assert.error(animalErr, 'DELETE /animals/:id should give 204');
 
             request.get('/animals')
@@ -613,7 +611,7 @@ test('Restle integration tests', (t) => {
       }))
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(201)
-      .end((catErr, catRes) => {
+      .end(catErr => {
         assert.error(catErr, 'successfully created cat should give 201');
 
         request.post('/animals')
@@ -629,7 +627,7 @@ test('Restle integration tests', (t) => {
           }))
           .expect('Content-Type', /application\/vnd\.api\+json/)
           .expect(201)
-          .end((dogErr, dogRes) => {
+          .end(dogErr => {
             assert.error(dogErr, 'successfully created dog should give 201');
 
             request.post('/animals')
@@ -645,7 +643,7 @@ test('Restle integration tests', (t) => {
               }))
               .expect('Content-Type', /application\/vnd\.api\+json/)
               .expect(201)
-              .end((zebraErr, zebraRes) => {
+              .end(zebraErr => {
                 assert.error(zebraErr, 'successfully created cat should give 201');
                 assert.end();
               });
@@ -730,7 +728,6 @@ test('Restle integration tests', (t) => {
   // TODO: post and patch for relationships, fetching (inclusion, sorting, query params)
 
   restle.on('disconnect', () => {
-    //console.log(t);
     console.log('Disconnecting!');
     db.close();
     t.end();
