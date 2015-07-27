@@ -5,8 +5,6 @@ import flushCollections from '../helpers/flush-collections';
 import supertest from 'supertest';
 import mongodb from 'mongodb';
 
-import prettyjson from 'prettyjson';
-
 before('Delete all records', (assert) => {
   const MongoClient = mongodb.MongoClient;
   const database = 'mongodb://test:test@ds047440.mongolab.com:47440/laddr-dev';
@@ -314,8 +312,6 @@ test('Restle integration tests', (t) => {
         const body = res.body;
         const id = body.data[0].id;
 
-        console.log(prettyjson.render(body));
-
         assert.error(err, 'GET /people should give 200');
         /*
         assert.deepEqual(body, {
@@ -442,7 +438,7 @@ test('Restle integration tests', (t) => {
           .expect(200)
           .end((newErr, newRes) => {
             const newBody = newRes.body;
-            console.log(prettyjson.render(newBody));
+
             assert.deepEqual(newBody, {
               links: {
                 self: `http://localhost:1337/api/people/${id}/`,
