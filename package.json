@@ -54,11 +54,10 @@
     "build": "npm run build:lib && npm run build:test",
     "build:lib": "mkdirp dist/lib && babel lib --out-dir dist/lib",
     "build:test": "mkdirp dist/test && babel test --out-dir dist/test",
-    "test": "npm run test:lint && npm run test:server && test:coverage && coveralls",
+    "test": "npm run test:lint && npm run test:server",
     "test:lint": "eslint lib test",
     "test:server": "npm run clean && npm run build && tape dist/test | tap-spec",
     "test:coverage": "istanbul cover dist/test",
-    "coveralls": "cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js"
   },
   "files": [
     "dist/lib",
