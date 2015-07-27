@@ -1,6 +1,6 @@
 {
   "name": "restle",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "JSON API engine.",
   "main": "dist/lib/index.js",
   "repository": {
@@ -57,7 +57,7 @@
     "test": "npm run test:lint && npm run test:server",
     "test:lint": "eslint lib test",
     "test:server": "npm run clean && npm run build && tape dist/test | tap-spec",
-    "test:coverage": "istanbul cover dist/test",
+    "test:coverage": "istanbul cover dist/test"
   },
   "files": [
     "dist/lib",
