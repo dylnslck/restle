@@ -1,25 +1,21 @@
 import test from 'tape';
 import before from 'tape';
 import restle from '../helpers/start-app';
+import flushCollections from '../helpers/flush-collections';
 import supertest from 'supertest';
-import mongojs from 'mongojs';
-
-const collections = ['animals', 'people', 'users'];
-const db = mongojs('mongodb://laddr:pook!00FF@ds047440.mongolab.com:47440/laddr-dev', collections);
+import mongodb from 'mongodb';
 
 before('Delete all records', (assert) => {
+  const MongoClient = mongodb.MongoClient;
+  const database = 'mongodb://test:test@ds047440.mongolab.com:47440/laddr-dev';
+
   restle.on('ready', () => {
-    console.log(`API located at http://localhost:1337/api`);
-    db.animals.remove(animalsErr => {
-      assert.error(animalsErr, 'no errors when removing animals collection');
+    MongoClient.connect(database, (err, db) => {
+      assert.error(err, 'connected to database');
 
-      db.people.remove(peopleErr => {
-        assert.error(peopleErr, 'no errors when removing people collection');
-
-        db.users.remove(usersErr => {
-          assert.error(usersErr, 'no errors when removing users collection');
-          assert.end();
-        });
+      flushCollections(assert, db, () => {
+        assert.end();
+        db.close();
       });
     });
   });
@@ -725,11 +721,8 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  // TODO: post and patch for relationships, fetching (inclusion, sorting, query params)
-
   restle.on('disconnect', () => {
     console.log('Disconnecting!');
-    db.close();
     t.end();
   });
 });
