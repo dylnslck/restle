@@ -1,0 +1,11 @@
+body {
+  background: rgb(240, 240, 255);
+}
+
+.logo {
+  padding: 40px 0px;
+}
+
+.docs h3 {
+  font-weight: 100;
+}

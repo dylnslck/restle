@@ -1,0 +1,6 @@
+{
+  "name": "restle",
+  "root": "site",
+  "clean_urls": true,
+  "error_page": "error.html"
+}
