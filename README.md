@@ -135,7 +135,7 @@ Content-Type: application/vnd.api+json
       "name": "Bob"
     },
     "links": {
-      "self": "http://localhost:1337/api/articles/1"
+      "self": "http://localhost:1337/api/users/1"
     },
     "relationships": {
       "company": {
