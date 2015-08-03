@@ -1,4 +1,4 @@
-restle
+Restle
 ======
 
 [![Build Status](https://travis-ci.org/dcslack/restle.svg)](https://travis-ci.org/dcslack/restle)
