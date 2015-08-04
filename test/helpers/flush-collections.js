@@ -2,6 +2,7 @@ export default function flushCollections(assert, db, done) {
   const animals = db.collection('animals');
   const people = db.collection('people');
   const users = db.collection('users');
+  const computers = db.collection('computers');
 
   animals.remove(animalsErr => {
     assert.error(animalsErr, 'no errors when removing animals collection');
@@ -11,7 +12,11 @@ export default function flushCollections(assert, db, done) {
 
       users.remove(usersErr => {
         assert.error(usersErr, 'no errors when removing users collection');
-        done();
+
+        computers.remove(computersErr => {
+          assert.error(computersErr, 'no errors when removing computers collection');
+          done();
+        });
       });
     });
   });

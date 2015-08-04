@@ -15,4 +15,9 @@ export default {
     isDinosaurBone: { attr: 'boolean' },
     body: { belongsTo: 'animal' },
   },
+
+  computer: {
+    uuid: { attr: 'string', required: true, unique: true },
+    type: { attr: 'string' },
+  },
 };

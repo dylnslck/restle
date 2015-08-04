@@ -802,7 +802,6 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals then DELETE /animals/:id then GET /animals to make sure there are none left', (assert) => {
     request.get('/animals')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((animalsErr, animalsRes) => {
@@ -893,7 +892,6 @@ test('Restle integration tests', (t) => {
   // TODO: deep equal
   t.test('GET /animals?page[offset]=1&page[limit]=2', (assert) => {
     request.get('/animals?page[offset]=1&page[limit]=2')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
@@ -905,7 +903,6 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals?sort=species,-color', (assert) => {
     request.get('/animals?sort=species')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
@@ -917,7 +914,6 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals?sort=-species,-color', (assert) => {
     request.get('/animals?sort=-species')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
@@ -929,7 +925,6 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals?species=Dog', (assert) => {
     request.get('/animals?species=Dog')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
@@ -941,7 +936,6 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals?species=Dog&color=purple', (assert) => {
     request.get('/animals?species=Dog&color=purple')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
@@ -953,12 +947,73 @@ test('Restle integration tests', (t) => {
 
   t.test('GET /animals?fields[animal]=color', (assert) => {
     request.get('/animals?fields[animal]=color')
-      .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
         console.log(res.body);
         assert.error(err, 'GET /animals?fields[animal]=color');
+        assert.end();
+      });
+  });
+
+  t.test('POST /computers with no uuid', (assert) => {
+    request.post('/computers')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(400)
+      .send(JSON.stringify({
+        data: {
+          type: 'computer',
+          attributes: {
+            type: 'Supercomputer',
+          },
+        },
+      }))
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'POST /computers with no uuid should give 400');
+        assert.end();
+      });
+  });
+
+  t.test('POST /computers with uuid', (assert) => {
+    request.post('/computers')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(201)
+      .send(JSON.stringify({
+        data: {
+          type: 'computer',
+          attributes: {
+            uuid: 1,
+            type: 'Laptop',
+          },
+        },
+      }))
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'POST /computers with uuid should give 201');
+        assert.end();
+      });
+  });
+
+  t.test('POST /computers with same uuid', (assert) => {
+    request.post('/computers')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(400)
+      .send(JSON.stringify({
+        data: {
+          type: 'computer',
+          attributes: {
+            uuid: 1,
+            type: 'Destop',
+          },
+        },
+      }))
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'POST /computers with same uuid should give 400');
         assert.end();
         restle.disconnect();
       });
