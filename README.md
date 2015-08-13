@@ -28,6 +28,7 @@ const restle = new Restle({
   port: 1337,
   database: 'mongodb://...',
   namespace: '/api',
+  cors: ['http://localhost:4200', 'https://example.com']
 });
 
 // define schemas
