@@ -11,8 +11,6 @@ Not all features in the JSON API specification are implemented yet: fields, volu
 I'm trying to match the test suite as close as possible with the JSON API spec. Reach out on GitHub for feature requests and
 any bugs you encounter, thanks!
 
-Disclaimer: Restle enables CORS by default.
-
 Getting started
 ====
 
