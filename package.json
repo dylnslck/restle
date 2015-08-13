@@ -30,6 +30,7 @@
     "lodash": "^2.4.1",
     "mongoose": "^3.8.20",
     "prettyjson": "^1.1.2",
+    "prompt": "^0.2.14",
     "string-template": "^0.2.1",
     "tape": "^4.0.0"
   },

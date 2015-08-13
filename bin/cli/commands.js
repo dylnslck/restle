@@ -1,17 +1,7 @@
-/**
- * Module dependencies.
- */
-
 var fs = require('fs');
 var path = require('path');
 var format = require('string-template');
 
-/**
- * Globals.
- */
-
-// TODO: Fix relative paths. This only works when restle
-// is called from the root directory of the restle folder.
 var templatesRoot = path.resolve('bin/templates/');
 var modelTemplate = fs.readFileSync(templatesRoot + '/model', 'utf-8');
 var schemaTemplate = fs.readFileSync(templatesRoot + '/schema', 'utf-8');
@@ -28,7 +18,7 @@ exports.init = function (args) {
 
   // Create app location.
   fs.mkdirSync(appFolder, 0755);
-  
+
   // Create restle.json.
   fs.open(appFolder + '/restle.json', 'w', function (err, fd) {
     if(err) throw err;
