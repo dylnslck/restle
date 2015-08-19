@@ -739,6 +739,55 @@ test('Restle integration tests', (t) => {
       });
   });
 
+  t.test('GET /animals then GET /animals/:id/owner', (assert) => {
+    request.get('/animals')
+      .set('Content-Type', 'application/vnd.api+json')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((animalsErr, animalsRes) => {
+        assert.error(animalsErr, 'GET /animals should give 200');
+        const animalsBody = animalsRes.body;
+        const animalId = animalsBody.data[0].id;
+        assert.ok(animalId, 'there is a valid id for the first animal returned');
+
+        request.get(`/animals/${animalId}/owner`)
+          .set('Content-Type', 'application/vnd.api+json')
+          .expect('Content-Type', /application\/vnd\.api\+json/)
+          .expect(200)
+          .end((relationshipErr, relationshipRes) => {
+            const relationshipBody = relationshipRes.body;
+            console.log(relationshipBody);
+            const ownerId = relationshipBody.data.id;
+            assert.error(relationshipErr, `GET /animals/${animalId}/relationships/owner should give 200`);
+            assert.deepEqual(relationshipBody, {
+              links: {
+                self: `http://localhost:1337/api/people/${ownerId}`,
+              },
+              data: {
+                id: `${ownerId}`,
+                type: 'person',
+                attributes: {
+                  name: 'Billy Smith',
+                },
+                relationships: {
+                  pets: {
+                    links: {
+                      self: `http://localhost:1337/api/people/${ownerId}/relationships/pets`,
+                      related: `http://localhost:1337/api/people/${ownerId}/pets`,
+                    },
+                    data: [{
+                      id: 'hello',
+                      type: 'animal',
+                    }],
+                  },
+                },
+              },
+            }, 'first relationships response has valid links and data array');
+            assert.end();
+          });
+      });
+  });
+
   t.test('GET /animals then GET /animals:id', (assert) => {
     request.get('/animals')
       .set('Content-Type', 'application/vnd.api+json')
