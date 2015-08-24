@@ -1,6 +1,6 @@
 {
   "name": "restle",
-  "version": "0.2.20",
+  "version": "0.2.21",
   "description": "JSON API engine.",
   "main": "dist/lib/index.js",
   "repository": {
