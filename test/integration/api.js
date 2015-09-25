@@ -932,24 +932,35 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?sort=species,-color', (assert) => {
-    request.get('/animals?sort=species')
+  t.test('GET /animals?sort=species,-age', (assert) => {
+    request.get('/animals?sort=species,-age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
         console.log(res.body);
-        assert.error(err, 'GET /animals?sort=species');
+        assert.error(err, 'GET /animals?sort=species,-age');
         assert.end();
       });
   });
 
-  t.test('GET /animals?sort=-species,-color', (assert) => {
-    request.get('/animals?sort=-species')
+  t.test('GET /animals?sort=-species,-age', (assert) => {
+    request.get('/animals?sort=-species,-age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
         console.log(res.body);
-        assert.error(err, 'GET /animals?sort=-species');
+        assert.error(err, 'GET /animals?sort=-species,-age');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?sort=-age', (assert) => {
+    request.get('/animals?sort=-age')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        console.log(res.body);
+        assert.error(err, 'GET /animals?sort=-age');
         assert.end();
       });
   });
@@ -976,13 +987,14 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?fields[animal]=color', (assert) => {
-    request.get('/animals?fields[animal]=color')
+  t.test('GET /animals?fields[animal]=age', (assert) => {
+    request.get('/animals?fields[animal]=age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
         console.log(res.body);
-        assert.error(err, 'GET /animals?fields[animal]=color');
+        console.log(res.body.data[0].attributes);
+        assert.error(err, 'GET /animals?fields[animal]=age');
         assert.end();
       });
   });
