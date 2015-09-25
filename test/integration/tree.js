@@ -147,29 +147,24 @@ test('find first person', assert => {
     .then(person => {
       assert.ok(person instanceof Resource, 'found person is a resource');
       assert.ok(person.getRelationship('company') instanceof Relationship, 'person company relationship is a relationship');
-      person.get('company')
-        .then(company => {
-          assert.ok(company instanceof Resource, 'person company is a resource');
-          assert.ok(company.getRelationship('office') instanceof Relationship, 'person company office relationship is a relationship');
-          company.get('office')
-            .then(office => {
-              assert.ok(office instanceof Resource, 'person company office is a resource');
-              office.get('location').then(location => {
-                assert.ok(location instanceof Resource, 'person company office location is a resource');
-                assert.end();
-              });
-            })
-            .catch(err => {
-              assert.fail(err);
-            });
-        })
-        .catch(err => {
-          assert.fail(err);
-        })
+      return person.get('company');
+    })
+    .then(company => {
+      assert.ok(company instanceof Resource, 'person company is a resource');
+      assert.ok(company.getRelationship('office') instanceof Relationship, 'person company office relationship is a relationship');
+      return company.get('office');
+    })
+    .then(office => {
+      assert.ok(office instanceof Resource, 'person company office is a resource');
+      return office.get('location');
+    })
+    .then(location => {
+      assert.ok(location instanceof Resource, 'person company office location is a resource');
+      assert.end();
     })
     .catch(err => {
       assert.fail(err);
-    });
+    })
 });
 
 test('find second person', assert => {
@@ -177,13 +172,15 @@ test('find second person', assert => {
     .then(person => {
       assert.ok(person instanceof Resource, 'person is a resource');
       assert.ok(person.getRelationship('pets') instanceof Relationship, 'person pets relationship is a relationship');
-      person.get('pets').then(pets => {
-        assert.ok(pets instanceof ResourceArray, 'person pets is a resource array');
-        pets.get(2, 'owner').then(owner => {
-          assert.ok(owner instanceof Resource, 'person second pet owner is a resource');
-          assert.end();
-        });
-      });
+      return person.get('pets');
+    })
+    .then(pets => {
+      assert.ok(pets instanceof ResourceArray, 'person pets is a resource array');
+      return pets.get(2, 'owner');
+    })
+    .then(owner => {
+      assert.ok(owner instanceof Resource, 'person second pet owner is a resource');
+      assert.end();
     })
     .catch(err => {
       assert.fail(err);
@@ -195,78 +192,15 @@ test('find second company', assert => {
     .then(company => {
       assert.ok(company instanceof Resource, 'company is a resource');
       assert.ok(company.getRelationship('employees') instanceof Relationship, 'company employees relationship is a relationship');
-      company.get('employees').then(employees => {
-        assert.ok(employees instanceof ResourceArray, 'company employees is a resource array');
-
-        employees.get(1, 'pets').then(pets => {
-          assert.ok(pets instanceof ResourceArray, 'company first employee pets is a resource array');
-
-          assert.deepEqual(company.serialize(), {
-            links: {
-              self: '/api/companies/2',
-            },
-            data: {
-              id: '2',
-              type: 'company',
-              attributes: {
-                name: 'Google',
-                industry: 'search',
-              },
-              relationships: {
-                employees: {
-                  links: {
-                    self: '/api/companies/2/relationships/employees',
-                    related: '/api/companies/2/employees',
-                  },
-                  data: [{
-                    type: 'person',
-                    id: '1'
-                  }]
-                },
-                office: {
-                  links: {
-                    self: '/api/companies/2/relationships/office',
-                    related: '/api/companies/2/office',
-                  },
-                  data: { type: 'building', id: '2' },
-                },
-              },
-            },
-            included: [{
-              type: 'person',
-              id: '1',
-              attributes: {
-                name: 'Dylan',
-                email: 'dylanslack@gmail.com',
-              },
-              relationships: {
-                pets: {
-                  links: {
-                    self: '/api/people/1/relationships/pets',
-                    related: '/api/people/1/pets',
-                  },
-                  data: [{
-                    type: 'animal',
-                    id: '1',
-                  }],
-                },
-                company: {
-                  links: {
-                    self: '/api/people/1/relationships/company',
-                    related: '/api/people/1/company',
-                  },
-                  data: { type: 'company', id: '1', },
-                },
-              },
-              links: {
-                self: '/api/people/1',
-              },
-            }],
-          }, 'serialized company json looks good');
-
-          assert.end();
-        });
-      });
+      return company.get('employees');
+    })
+    .then(employees => {
+      assert.ok(employees instanceof ResourceArray, 'company employees is a resource array');
+      return employees.get(1, 'pets');
+    })
+    .then(pets => {
+      assert.ok(pets instanceof ResourceArray, 'company first employee pets is a resource array');
+      assert.end();
     })
     .catch(err => {
       assert.fail(err);
