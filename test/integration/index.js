@@ -1,1075 +1,594 @@
+import Restle from '../../../dist/lib';
+import Resource from '../../../dist/lib/model/resource';
+import Relationship from '../../../dist/lib/model/relationship';
+import ResourceArray from '../../../dist/lib/model/resource-array';
+import schemas from '../fixtures/restle-schemas';
+
+import Promise from 'bluebird';
 import test from 'tape';
 import before from 'tape';
-import restle from '../helpers/start-app';
-import flushCollections from '../helpers/flush-collections';
-import supertest from 'supertest';
-import mongodb from 'mongodb';
 
-before('Delete all records', (assert) => {
-  const MongoClient = mongodb.MongoClient;
-  const database = 'mongodb://test:test@ds047440.mongolab.com:47440/laddr-dev';
+const app = new Restle({ namespace: 'api' });
+const person = app.register('person', schemas.person);
+const animal = app.register('animal', schemas.animal);
 
-  restle.on('ready', () => {
-    MongoClient.connect(database, (err, db) => {
-      assert.error(err, 'connected to database');
+test('find all people', assert => {
+  person.find()
+    .then(people => {
+      assert.ok(people instanceof ResourceArray, 'people are a ResourceArray');
+      assert.deepEqual(people.serialize(), {
+        links: {
+          self: '/api/people',
+        },
+        data: [],
+        included: [],
+      }, 'people json looks good');
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
 
-      flushCollections(assert, db, () => {
-        assert.end();
-        db.close();
-      });
+// test createResource without relationships
+test('create billy and spot', assert => {
+  const billy = person.createResource({ name: 'Billy', email: 'b@e.com' });
+  const spot = animal.createResource({ name: 'Spot', color: 'black and white' });
+
+  Promise.all([billy, spot])
+    .then(resources => {
+      assert.ok(resources[0] instanceof Resource, 'billy is a resource');
+      assert.ok(resources[1] instanceof Resource, 'spot is a resource');
+
+      assert.deepEqual(resources[0].serialize(), {
+        links: {
+          self: '/api/people/1'
+        },
+        data: {
+          id: '1',
+          type: 'person',
+          attributes: {
+            name: 'Billy',
+            email: 'b@e.com',
+          },
+          relationships: {
+            pets: {
+              data: [],
+              links: {
+                related: '/api/people/1/pets',
+                self: '/api/people/1/relationships/pets',
+              },
+            },
+          },
+        },
+        included: [],
+      }, 'serialized billy has good looking json');
+
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+// test createResource with to-one and to-many relationships
+test('create jimmy and lucy', assert => {
+  const jimmy = person.createResource({ name: 'Jimmy', email: 'j@e.com', pets: [1] });
+  const lucy = animal.createResource({ name: 'Lucy', color: 'gold', owner: 1 });
+
+  Promise.all([jimmy, lucy])
+    .then(resources => {
+      assert.ok(resources[0] instanceof Resource, 'jimmy is a resource');
+      assert.ok(resources[1] instanceof Resource, 'lucy is a resource');
+
+      assert.deepEqual(resources[0].serialize(), {
+        links: {
+          self: '/api/people/2'
+        },
+        data: {
+          id: '2',
+          type: 'person',
+          attributes: {
+            name: 'Jimmy',
+            email: 'j@e.com',
+          },
+          relationships: {
+            pets: {
+              data: [{
+                type: 'animal',
+                id: '1',
+              }],
+              links: {
+                related: '/api/people/2/pets',
+                self: '/api/people/2/relationships/pets',
+              },
+            },
+          },
+        },
+        included: [{
+          type: 'animal',
+          id: '1',
+          attributes: {
+            name: 'Spot',
+            color: 'black and white',
+          },
+          links: {
+            self: '/api/animals/1',
+          },
+        }],
+      }, 'serialized jimmy has good looking json');
+
+      assert.deepEqual(resources[1].serialize(), {
+        links: {
+          self: '/api/animals/2'
+        },
+        data: {
+          id: '2',
+          type: 'animal',
+          attributes: {
+            name: 'Lucy',
+            color: 'gold',
+          },
+          relationships: {
+            owner: {
+              data: {
+                type: 'person',
+                id: '1',
+              },
+              links: {
+                related: '/api/animals/2/owner',
+                self: '/api/animals/2/relationships/owner',
+              },
+            },
+          },
+        },
+        included: [{
+          type: 'person',
+          id: '1',
+          attributes: {
+            name: 'Billy',
+            email: 'b@e.com',
+          },
+          links: {
+            self: '/api/people/1',
+          },
+        }],
+      }, 'serialized lucy has good looking json');
+
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test(`get resource with to-one relationship`, assert => {
+  animal.findResource(2)
+    .then(lucy => {
+      assert.ok(lucy instanceof Resource, 'lucy is a resource');
+      assert.deepEqual(lucy.serialize(), {
+        links: {
+          self: '/api/animals/2',
+        },
+        data: {
+          id: '2',
+          type: 'animal',
+          attributes: {
+            color: 'gold',
+            name: 'Lucy',
+          },
+          relationships: {
+            owner: {
+              data: {
+                type: 'person',
+                id: '1',
+              },
+              links: {
+                self: '/api/animals/2/relationships/owner',
+                related: '/api/animals/2/owner',
+              },
+            },
+          },
+        },
+        included: [{
+          type: 'person',
+          id: '1',
+          attributes: {
+            name: 'Billy',
+            email: 'b@e.com',
+          },
+          links: {
+            self: '/api/people/1',
+          },
+        }],
+      }, 'serialized lucy has good looking json');
+      assert.end();
+    })
+    .catch(err => {
+      ssert.fail(err);
+    });
+});
+
+test(`get resource with to-many relationship`, assert => {
+  person.findResource(2)
+    .then(jimmy => {
+      assert.ok(jimmy instanceof Resource, 'jimmy is a resource');
+      assert.deepEqual(jimmy.serialize(), {
+        links: {
+          self: '/api/people/2',
+        },
+        data: {
+          id: '2',
+          type: 'person',
+          attributes: {
+            email: 'j@e.com',
+            name: 'Jimmy',
+          },
+          relationships: {
+            pets: {
+              data: [{
+                type: 'animal',
+                id: '1',
+              }],
+              links: {
+                self: '/api/people/2/relationships/pets',
+                related: '/api/people/2/pets',
+              },
+            },
+          },
+        },
+        included: [{
+          type: 'animal',
+          id: '1',
+          attributes: {
+            name: 'Spot',
+            color: 'black and white',
+          },
+          links: {
+            self: '/api/animals/1',
+          },
+        }],
+      }, 'serialized jimmy has good looking json');
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test(`get related to-one`, assert => {
+  animal.findRelated(2, 'owner')
+    .then(owner => {
+      assert.ok(owner instanceof Resource, `lucy's owner is a resource`);
+      assert.deepEqual(owner.serialize(), {
+        links: {
+          self: '/api/animals/2/owner',
+        },
+        data: {
+          id: '1',
+          type: 'person',
+          attributes: {
+            name: 'Billy',
+            email: 'b@e.com',
+          },
+          relationships: {
+            pets: {
+              data: [],
+              links: {
+                self: '/api/people/1/relationships/pets',
+                related: '/api/people/1/pets',
+              },
+            },
+          },
+        },
+        included: [],
+      }, `lucy's serialized owner has good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test(`get related to-many`, assert => {
+  person.findRelated(2, 'pets')
+    .then(pets => {
+      assert.ok(pets instanceof ResourceArray, `jimmy's pets is a resource array`);
+      assert.deepEqual(pets.serialize(), {
+        links: {
+          self: '/api/people/2/pets',
+        },
+        data: [{
+          id: '1',
+          type: 'animal',
+          attributes: {
+            name: 'Spot',
+            color: 'black and white',
+          },
+          relationships: {
+            owner: {
+              data: null,
+              links: {
+                self: '/api/animals/1/relationships/owner',
+                related: '/api/animals/1/owner',
+              },
+            },
+          },
+        }],
+        included: [],
+      }, `jimmy's serialized pets have good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-one', assert => {
+  animal.findRelationship(2, 'owner')
+    .then(owner => {
+      assert.ok(owner instanceof Relationship, `lucy's owner is a relationship`);
+      assert.deepEqual(owner.serialize(), {
+        links: {
+          self: '/api/animals/2/relationships/owner',
+          related: '/api/animals/2/owner',
+        },
+        data: {
+          type: 'person',
+          id: '1',
+        },
+      }, `lucy's serialized owner relationship has good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-many', assert => {
+  person.findRelationship(2, 'pets')
+    .then(pets => {
+      assert.ok(pets instanceof Relationship, `jimmy's pets are a relationship`);
+      assert.deepEqual(pets.serialize(), {
+        links: {
+          self: '/api/people/2/relationships/pets',
+          related: '/api/people/2/pets',
+        },
+        data: [{
+          type: 'animal',
+          id: '1',
+        }],
+      }, `jimmy's serialized pets relationship has good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('append to-many relationship', assert => {
+  animal.findResource(2)
+    .then(lucy => {
+      assert.ok(lucy instanceof Resource, 'lucy is a resource');
+
+      person.findRelationship(2, 'pets')
+        .then(pets => {
+          assert.ok(pets instanceof Relationship, 'pets are a relationship');
+
+          pets.append(lucy)
+            .then(success => {
+              assert.ok('success', 'added lucy to jimmy pets relationship');
+              assert.end();
+            })
+            .catch(err => {
+              assert.fail(err);
+            });
+        })
+        .catch(err => {
+          assert.fail(err);
+        });
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-many (again)', assert => {
+  person.findRelationship(2, 'pets')
+    .then(pets => {
+      assert.ok(pets instanceof Relationship, 'pets are a relationship');
+      assert.deepEqual(pets.serialize(), {
+        links: {
+          self: '/api/people/2/relationships/pets',
+          related: '/api/people/2/pets',
+        },
+        data: [
+          {
+            type: 'animal',
+            id: '1',
+          },
+          {
+            type: 'animal',
+            id: '2',
+          },
+        ],
+      }, 'serialized pets relationship looks good and has two items');
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('set to-one relationship', assert => {
+  person.findResource(1)
+    .then(billy => {
+      animal.findRelationship(1, 'owner')
+        .then(owner => {
+          assert.ok(owner instanceof Relationship, 'owner is a relationship');
+          owner.set(billy)
+            .then(success => {
+              assert.ok(success, 'billy successfully set as the owner');
+              assert.end();
+            })
+            .catch(err => {
+              assert.fail(err);
+            });
+        })
+        .catch(err => {
+          assert.fail(err);
+        });
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-one (again)', assert => {
+  animal.findRelationship(1, 'owner')
+    .then(owner => {
+      assert.ok(owner instanceof Relationship, `spot's owner is a relationship`);
+      assert.deepEqual(owner.serialize(), {
+        links: {
+          self: '/api/animals/1/relationships/owner',
+          related: '/api/animals/1/owner',
+        },
+        data: {
+          type: 'person',
+          id: '1',
+        },
+      }, `spot's serialized owner relationship has good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('remove to-one relationship', assert => {
+  animal.findRelationship(1, 'owner')
+    .then(owner => {
+      assert.ok(owner instanceof Relationship, `spot's owner is a relationship`);
+      owner.remove()
+        .then(success => {
+          assert.ok(success, `spot's owner was removed`);
+          assert.end();
+        })
+        .catch(err => {
+          assert.fail(err);
+        });
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-one (again again)', assert => {
+  animal.findRelationship(1, 'owner')
+    .then(owner => {
+      assert.ok(owner instanceof Relationship, `spot's owner is a relationship`);
+      assert.deepEqual(owner.serialize(), {
+        links: {
+          self: '/api/animals/1/relationships/owner',
+          related: '/api/animals/1/owner',
+        },
+        data: null,
+      }, `spot's serialized owner relationship has good looking json`);
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('delete relationships to-many', assert => {
+  person.findRelationship(2, 'pets')
+    .then(pets => {
+      assert.ok(pets instanceof Relationship, 'pets are a relationship');
+      pets.deleteMany([1, 2])
+        .then(success => {
+          assert.ok('success', 'pets have been deleted');
+          assert.end();
+        })
+        .catch(err => {
+          assert.fail(err);
+        });
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('get relationships to-many (again again)', assert => {
+  person.findRelationship(2, 'pets')
+    .then(pets => {
+      assert.ok(pets instanceof Relationship, 'pets are a relationship');
+      assert.deepEqual(pets.serialize(), {
+        links: {
+          self: '/api/people/2/relationships/pets',
+          related: '/api/people/2/pets',
+        },
+        data: [],
+      }, 'serialized pets relationship looks good and has two items');
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
+
+test('update billy', assert => {
+  person.updateResource(1, {
+    name: 'Johnny',
+  }).then(success => {
+    assert.ok(success, 'updating billy returned a success');
+
+    person.findResource(1).then(billy => {
+      assert.ok(billy instanceof Resource, 'billy is indeed a resource');
+      assert.deepEqual(billy.serialize(), {
+        links: {
+          self: '/api/people/1',
+        },
+        data: {
+          id: '1',
+          type: 'person',
+          attributes: {
+            name: 'Johnny',
+            email: 'b@e.com',
+          },
+          relationships: {
+            pets: {
+              links: {
+                self: '/api/people/1/relationships/pets',
+                related: '/api/people/1/pets',
+              },
+              data: [],
+            },
+          },
+        },
+        included: [],
+      }, 'billy serialized json looks good');
+      assert.end();
     });
   });
 });
 
-test('Restle integration tests', (t) => {
-  const request = supertest('http://localhost:1337/api');
+test('delete billy', assert => {
+  person.deleteResource(1)
+    .then(success => {
+      assert.ok(success, 'billy was apparently deleted');
+      assert.end();
+    })
+    .catch(err => {
+      assert.fail(err);
+    });
+});
 
-  t.test('GET /people (first time)', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'response status should be 200');
-        assert.deepEqual(body, {
-          links: {
-            self: `http://localhost:1337/api/people/`,
-          },
-          data: [],
-        }, 'response body should look good with a links and data members');
-        assert.end();
-      });
-  });
-
-  t.test('POST /people (without data)', (assert) => {
-    request.post('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .end((err, res) => {
-        assert.error(err, 'no `data` key in post body gives 400');
-        assert.ok(res.body.errors, 'the errors object is there');
-        assert.notOk(res.body.data, 'the data object is not there');
-        assert.notOk(res.body.includes, 'the includes object is not there');
-        assert.end();
-      });
-  });
-
-  t.test('POST /people (without data.type)', (assert) => {
-    request.post('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({ data: { invalidData: true }}))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .end((err, res) => {
-        assert.error(err, 'no `data.type` key in post body gives 400');
-        assert.ok(res.body.errors, 'the errors object is there');
-        assert.notOk(res.body.data, 'the data object is not there');
-        assert.notOk(res.body.includes, 'the includes object is not there');
-        assert.end();
-      });
-  });
-
-  t.test('POST /people (with bad data.type)', (assert) => {
-    request.post('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({ data: { type: 'animal' }}))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(409)
-      .end((err, res) => {
-        assert.error(err, 'a bad type in post body gives 409');
-        assert.ok(res.body.errors, 'the errors object is there');
-        assert.end();
-      });
-  });
-
-  t.test('POST /people (with data.type and attributes)', (assert) => {
-    request.post('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'person',
-          attributes: {
-            name: 'Bobby Jones',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(201)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'successfully created should give 201');
-        assert.equal(res.headers.location, `http://localhost:1337/api/people/${body.data.id}`, 'the location header matches the links self member');
-        assert.ok(body, 'there is a response body');
-        assert.ok(body.data, 'there is a data member');
-        assert.ok(body.data.id, 'the data member has an id');
-        assert.deepEqual(body, {
-          data: {
-            type: 'person',
-            id: body.data.id,
-            attributes: {
-              name: 'Bobby Jones',
-            },
-            links: {
-              self: `http://localhost:1337/api/people/${body.data.id}/`,
-            },
-            relationships: {
-              pets: {
-                data: [],
-                links: {
-                  self: `http://localhost:1337/api/people/${body.data.id}/relationships/pets`,
-                  related: `http://localhost:1337/api/people/${body.data.id}/pets`,
-                },
-              },
-            },
-          },
-          included: [],
-        }, 'the response body should have the proper links and primary data with attributes');
-        assert.end();
-      });
-  });
-
-  t.test('POST /animals then POST /people with animal relationship', (assert) => {
-    request.post('/animals')
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'animal',
-          attributes: {
-            species: 'Dog',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(201)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'successfully created animal should give 201');
-        assert.deepEqual(body, {
-          data: {
-            type: 'animal',
-            id: body.data.id,
-            attributes: {
-              species: 'Dog',
-            },
-            links: {
-              self: `http://localhost:1337/api/animals/${body.data.id}/`,
-            },
-            relationships: {
-              bones: {
-                data: [],
-                links: {
-                  self: `http://localhost:1337/api/animals/${body.data.id}/relationships/bones`,
-                  related: `http://localhost:1337/api/animals/${body.data.id}/bones`,
-                },
-              },
-            },
-          },
-          included: [],
-        }, 'the response body should have the proper links and primary data with attributes');
-
-        request.post('/people')
-          .set('Content-Type', 'application/vnd.api+json')
-          .send(JSON.stringify({
-            data: {
-              type: 'people',
-              attributes: {
-                name: 'Billy Smith',
-              },
-              relationships: {
-                pets: {
-                  data: [{
-                    type: 'animal',
-                    id: body.data.id,
-                  }],
-                },
-              },
-            },
-          }))
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(201)
-          .end((errPerson, resPerson) => {
-            const bodyPerson = resPerson.body;
-            assert.error(errPerson, 'successfully created person should give 201');
-            assert.deepEqual(bodyPerson, {
-              data: {
-                type: 'person',
-                id: bodyPerson.data.id,
-                attributes: {
-                  name: 'Billy Smith',
-                },
-                relationships: {
-                  pets: {
-                    links: {
-                      self: `http://localhost:1337/api/people/${bodyPerson.data.id}/relationships/pets`,
-                      related: `http://localhost:1337/api/people/${bodyPerson.data.id}/pets`,
-                    },
-                    data: [{
-                      type: 'animal',
-                      id: `${body.data.id}`,
-                    }],
-                  },
-                },
-                links: {
-                  self: `http://localhost:1337/api/people/${bodyPerson.data.id}/`,
-                },
-              },
-              included: [{
-                attributes: {
-                  species: 'Dog',
-                },
-                id: `${body.data.id}`,
-                type: 'animal',
-                relationships: {
-                  bones: [],
-                },
-                links: {
-                  self: `http://localhost:1337/api/animals/${body.data.id}/`,
-                },
-              }],
-            });
-            assert.end();
-          });
-      });
-  });
-
-  t.test('PATCH /people/invalid', assert => {
-    request.patch(`/people/invalid`)
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'person',
-          id: 'invalid',
-          attributes: {
-            name: 'New Name',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(403)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'PATCH /people/invalid should return a 403');
-        // TODO: deep equal with errors
-        assert.ok(body.errors, 'the errors object exists');
-        assert.end();
-      });
-  });
-
-  t.test('PATCH /people/55a67e56864054d13dd730a5', assert => {
-    request.patch(`/people/55a67e56864054d13dd730a5`)
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'person',
-          id: '55a67e56864054d13dd730a5',
-          attributes: {
-            name: 'Another Name',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(404)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'PATCH /people/55a67e56864054d13dd730a5 should not find a resource and return a 404');
-        // TODO: deep equal with errors
-        assert.ok(body.errors, 'the errors object exists');
-        assert.end();
-      });
-  });
-
-  t.test('PATCH /people/different-ids', assert => {
-    request.patch(`/people/55a686e7ae28cf333f972e3e`)
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'person',
-          id: '55a67e56864054d13dd730a5',
-          attributes: {
-            name: 'Another Name',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(409)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'PATCH /people/ with different ids type should return a 409');
-        // TODO: deep equal
-        assert.ok(body.errors, 'the errors object exists');
-        assert.end();
-      });
-  });
-
-  t.test('GET /people then PATCH first user with new attributes', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        const body = res.body;
-        const id = body.data[0].id;
-
-        assert.error(err, 'GET /people should give 200');
-        /*
-        assert.deepEqual(body, {
-          links: {
-            self: 'http://localhost:1337/api/people/',
-          },
-          data: [{
-            type: 'person',
-            id: `${res.body.data[0].id}`,
-            attributes: {
-              name: 'Bobby Jones',
-            },
-            links: {
-              self: `http://localhost:1337/api/people/${res.body.data[0].id}/`,
-            },
-            relationships: {
-              pets: {
-                data: [],
-                links: {
-                  self: `http://localhost:1337/api/people/${res.body.data[0].id}/relationships/pets`,
-                  related: `http://localhost:1337/api/people/${res.body.data[0].id}/pets`,
-                },
-              },
-            },
-          }, {
-            type: 'person',
-            id: `${res.body.data[1].id}`,
-            attributes: {
-              name: 'Billy Smith',
-            },
-            links: {
-              self: `http://localhost:1337/api/people/${res.body.data[1].id}/`,
-            },
-            relationships: {
-              pets: {
-                data: [{
-                  type: 'animal',
-                  id: `${res.body.data[1].relationships.pets.data[0].id}/`,
-                }],
-                links: {
-                  self: `http://localhost:1337/api/people/${res.body.data[1].id}/relationships/pets`,
-                  related: `http://localhost:1337/api/people/${res.body.data[1].id}/pets`,
-                },
-              },
-            },
-          }],
-          included: [{
-            type: 'animal',
-            id: `${res.body.data[1].relationships.pets.data[0].id}`,
-            attributes: {
-              species: 'Dog',
-            },
-            links: {
-              self: `http://localhost:1337/api/animals/${res.body.data[1].relationships.pets.data[0].id}/`,
-            },
-            relationships: {
-              bones: [],
-            },
-          }],
-        }, 'the two people in the database have good looking json');
-        */
-        request.patch(`/people/${id}`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .send(JSON.stringify({
-            data: {
-              type: 'person',
-              id: `${id}`,
-              attributes: {
-                name: 'New Name',
-              },
-            },
-          }))
-          .expect(204)
-          .end(newErr => {
-            assert.error(newErr, 'PATCH should give 204');
-            assert.end();
-          });
-      });
-  });
-
-  t.test('GET /people/invalid', assert => {
-    request.get(`/people/invalid`)
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(403)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'GET /people/invalid should return a 403');
-        // TODO: deep equal with errors
-        assert.ok(body.errors, 'the errors object exists');
-        assert.end();
-      });
-  });
-
-  t.test('GET /people/55a67e56864054d13dd730a5', assert => {
-    request.get(`/people/55a67e56864054d13dd730a5`)
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(404)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'GET /people/55a67e56864054d13dd730a5 should not find a resource and return a 404');
-        // TODO: deep equal with errors
-        assert.ok(body.errors, 'the errors object exists');
-        assert.end();
-      });
-  });
-
-  t.test('GET /people to check attributes', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'get /people should give 200');
-        assert.equal(body.data.length, 2, 'there should be two people in the database');
-        const id = res.body.data[0].id;
-        assert.ok(id, 'there is a valid id for the first user returned');
-
-        request.get(`/people/${id}`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((newErr, newRes) => {
-            const newBody = newRes.body;
-
-            assert.deepEqual(newBody, {
-              links: {
-                self: `http://localhost:1337/api/people/${id}/`,
-              },
-              data: {
-                type: 'person',
-                id: `${id}`,
-                attributes: {
-                  name: 'New Name',
-                },
-                relationships: {
-                  pets: {
-                    data: [],
-                    links: {
-                      self: `http://localhost:1337/api/people/${id}/relationships/pets`,
-                      related: `http://localhost:1337/api/people/${id}/pets`,
-                    },
-                  },
-                },
-              },
-              included: [],
-            });
-            assert.end();
-          });
-      });
-  });
-
-  t.test('GET /people then GET /people/:id/relationships/pets', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        const body = res.body;
-        assert.error(err, 'get /people should give 200');
-        assert.equal(body.data.length, 2, 'there should be two people in the database');
-        const firstId = body.data[0].id;
-        const secondId = body.data[1].id;
-        assert.ok(firstId, 'there is a valid id for the first user returned');
-        assert.ok(secondId, 'there is a valid id for the second user returned');
-
-        request.get(`/people/${firstId}/relationships/pets`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((firstErr, firstRes) => {
-            const firstBody = firstRes.body;
-            assert.deepEqual(firstBody, {
-              links: {
-                self: `http://localhost:1337/api/people/${firstId}/relationships/pets`,
-                related: `http://localhost:1337/api/people/${firstId}/pets`,
-              },
-              data: [],
-            }, 'first relationships response has valid links and empty data array');
-
-            request.get(`/people/${secondId}/relationships/pets`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect('Content-Type', /application\/vnd\.api\+json/)
-              .expect(200)
-              .end((secondErr, secondRes) => {
-                const secondBody = secondRes.body;
-
-                assert.deepEqual(secondBody, {
-                  links: {
-                    self: `http://localhost:1337/api/people/${secondId}/relationships/pets`,
-                    related: `http://localhost:1337/api/people/${secondId}/pets`,
-                  },
-                  data: [{
-                    type: 'animal',
-                    id: secondBody.data[0].id,
-                  }],
-                }, 'second relationships response has valid links and populated data array');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /people then PATCH /people/:id/relationships/pets with []', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.patch(`/people/${peopleId}/relationships/pets`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect(204)
-          .send(JSON.stringify({
-            data: [],
-          }))
-          .end(relationshipErr => {
-            assert.error(relationshipErr, 'PATCH /people/:id/relationships/pets should give 204');
-            assert.end();
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then POST /people/:id/relationships/pets with an animal', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-            assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-            assert.ok(animalId, 'the first animal resource has an id');
-
-            request.post(`/people/${peopleId}/relationships/pets`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect(204)
-              .send(JSON.stringify({
-                data: [{
-                  id: `${animalId}`,
-                  type: 'animal',
-                }],
-              }))
-              .end(relationshipErr => {
-                assert.error(relationshipErr, 'POST /people/:id/relationships/pets should give 204');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then POST /animals/:id/relationships/owner with a person', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-            assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-            assert.ok(animalId, 'the first animal resource has an id');
-
-            request.post(`/animals/${animalId}/relationships/owner`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect(403)
-              .send(JSON.stringify({
-                data: [{
-                  id: `${peopleId}`,
-                  type: 'person',
-                }],
-              }))
-              .end((relationshipErr, relationshipRes) => {
-                assert.error(relationshipErr, `POST /animals/${animalId}/relationships/owner should give 403`);
-                assert.ok(relationshipRes.body.errors, 'the errors object is there.');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with an array of people', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-            assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-            assert.ok(animalId, 'the first animal resource has an id');
-
-            request.patch(`/animals/${animalId}/relationships/owner`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect(403)
-              .send(JSON.stringify({
-                data: [{
-                  id: `${peopleId}`,
-                  type: 'person',
-                }],
-              }))
-              .end((relationshipErr, relationshipRes) => {
-                assert.error(relationshipErr, `PATCH /animals/${animalId}/relationships/owner should give 403`);
-                assert.ok(relationshipRes.body.errors, 'the errors object is there.');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with a single person', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-            assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-            assert.ok(animalId, 'the first animal resource has an id');
-
-            request.patch(`/animals/${animalId}/relationships/owner`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect(204)
-              .send(JSON.stringify({
-                data: {
-                  id: `${peopleId}`,
-                  type: 'person',
-                },
-              }))
-              .end(relationshipErr => {
-                assert.error(relationshipErr, `PATCH /animals/${animalId}/relationships/owner should give 204`);
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then GET /animals/:id/relationships/owner', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            assert.error(animalsErr, 'GET /animals should give 200');
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-            assert.ok(animalId, 'there is a valid id for the first animal returned');
-
-            request.get(`/animals/${animalId}/relationships/owner`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect('Content-Type', /application\/vnd\.api\+json/)
-              .expect(200)
-              .end((relationshipErr, relationshipRes) => {
-                const relationshipBody = relationshipRes.body;
-                assert.error(relationshipErr, `GET /animals/${animalId}/relationships/owner should give 200`);
-                assert.deepEqual(relationshipBody, {
-                  links: {
-                    self: `http://localhost:1337/api/animals/${animalId}/relationships/owner`,
-                    related: `http://localhost:1337/api/animals/${animalId}/owner`,
-                  },
-                  data: {
-                    id: `${peopleId}`,
-                    type: 'person',
-                  },
-                }, 'first relationships response has valid links and data array');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /animals then GET /animals/:id/owner', (assert) => {
-    request.get('/animals')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((animalsErr, animalsRes) => {
-        assert.error(animalsErr, 'GET /animals should give 200');
-        const animalsBody = animalsRes.body;
-        const animalId = animalsBody.data[0].id;
-        assert.ok(animalId, 'there is a valid id for the first animal returned');
-
-        request.get(`/animals/${animalId}/owner`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((relationshipErr, relationshipRes) => {
-            const relationshipBody = relationshipRes.body;
-            console.log(relationshipBody);
-            const ownerId = relationshipBody.data.id;
-            assert.error(relationshipErr, `GET /animals/${animalId}/relationships/owner should give 200`);
-            assert.deepEqual(relationshipBody, {
-              links: {
-                self: `http://localhost:1337/api/people/${ownerId}`,
-              },
-              data: {
-                id: `${ownerId}`,
-                type: 'person',
-                attributes: {
-                  name: 'Billy Smith',
-                },
-                relationships: {
-                  pets: {
-                    links: {
-                      self: `http://localhost:1337/api/people/${ownerId}/relationships/pets`,
-                      related: `http://localhost:1337/api/people/${ownerId}/pets`,
-                    },
-                    data: [{
-                      id: 'hello',
-                      type: 'animal',
-                    }],
-                  },
-                },
-              },
-            }, 'first relationships response has valid links and data array');
-            assert.end();
-          });
-      });
-  });
-
-  t.test('GET /animals then GET /animals:id', (assert) => {
-    request.get('/animals')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((animalsErr, animalsRes) => {
-        assert.error(animalsErr, 'GET /animals should give 200');
-        const animalsBody = animalsRes.body;
-        const animalId = animalsBody.data[0].id;
-        assert.ok(animalId, 'there is a valid id for the first animal returned');
-
-        request.get(`/animals/${animalId}`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end(animalErr => {
-            assert.error(animalErr, `GET /animals/${animalId}/ should give 200`);
-            assert.end();
-          });
-      });
-  });
-
-  t.test('GET /people then GET /animals then DELETE /people/:id/relationships/pets with an animal', (assert) => {
-    request.get('/people')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((peopleErr, peopleRes) => {
-        const peopleBody = peopleRes.body;
-        const peopleId = peopleBody.data[1].id;
-        assert.error(peopleErr, 'GET /people should give 200 and correct media type');
-        assert.ok(peopleId, 'the second person resource has an id');
-
-        request.get('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(200)
-          .end((animalsErr, animalsRes) => {
-            const animalsBody = animalsRes.body;
-            const animalId = animalsBody.data[0].id;
-
-            assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-            assert.ok(animalId, 'the first animal resource has an id');
-
-            request.delete(`/people/${peopleId}/relationships/pets`)
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect(204)
-              .send(JSON.stringify({
-                data: [{
-                  id: `${animalId}`,
-                  type: 'animal',
-                }],
-              }))
-              .end(relationshipErr => {
-                assert.error(relationshipErr, 'DELETE /people/:id/relationships/pets should give 204');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('GET /animals then DELETE /animals/:id then GET /animals to make sure there are none left', (assert) => {
-    request.get('/animals')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((animalsErr, animalsRes) => {
-        const animalsBody = animalsRes.body;
-        const animalId = animalsBody.data[0].id;
-        assert.error(animalsErr, 'GET /animals should give 200 and correct media type');
-        assert.ok(animalId, 'the first animal resource has an id');
-
-        request.delete(`/animals/${animalId}`)
-          .set('Content-Type', 'application/vnd.api+json')
-          .expect(204)
-          .end(animalErr => {
-            assert.error(animalErr, 'DELETE /animals/:id should give 204');
-
-            request.get('/animals')
-              .set('Content-Type', 'application/vnd.api+json')
-              .expect('Content-Type', /application\/vnd\.api\+json/)
-              .expect(200)
-              .end((secondAnimalsErr, secondAnimalsRes) => {
-                const secondAnimalsBody = secondAnimalsRes.body;
-                assert.error(secondAnimalsErr, 'GET /animals should give 200 and correct media type');
-                assert.deepEqual(secondAnimalsBody, {
-                  links: {
-                    self: 'http://localhost:1337/api/animals/',
-                  },
-                  data: [],
-                }, 'the animals body has correct links and empty data');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  t.test('POST /animals with species cat, dog, zebra', (assert) => {
-    request.post('/animals')
-      .set('Content-Type', 'application/vnd.api+json')
-      .send(JSON.stringify({
-        data: {
-          type: 'animal',
-          attributes: {
-            species: 'Cat',
-            color: 'White',
-          },
-        },
-      }))
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(201)
-      .end(catErr => {
-        assert.error(catErr, 'successfully created cat should give 201');
-
-        request.post('/animals')
-          .set('Content-Type', 'application/vnd.api+json')
-          .send(JSON.stringify({
-            data: {
-              type: 'animal',
-              attributes: {
-                species: 'Dog',
-                color: 'Black',
-              },
-            },
-          }))
-          .expect('Content-Type', /application\/vnd\.api\+json/)
-          .expect(201)
-          .end(dogErr => {
-            assert.error(dogErr, 'successfully created dog should give 201');
-
-            request.post('/animals')
-              .set('Content-Type', 'application/vnd.api+json')
-              .send(JSON.stringify({
-                data: {
-                  type: 'animal',
-                  attributes: {
-                    species: 'Zebra',
-                    color: 'Striped',
-                  },
-                },
-              }))
-              .expect('Content-Type', /application\/vnd\.api\+json/)
-              .expect(201)
-              .end(zebraErr => {
-                assert.error(zebraErr, 'successfully created cat should give 201');
-                assert.end();
-              });
-          });
-      });
-  });
-
-  // TODO: deep equal
-  t.test('GET /animals?page[offset]=1&page[limit]=2', (assert) => {
-    request.get('/animals?page[offset]=1&page[limit]=2')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?page[offset]=1&page[limit]=1 should give 200');
-        assert.end();
-      });
-  });
-
-  t.test('GET /animals?sort=species,-color', (assert) => {
-    request.get('/animals?sort=species')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?sort=species');
-        assert.end();
-      });
-  });
-
-  t.test('GET /animals?sort=-species,-color', (assert) => {
-    request.get('/animals?sort=-species')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?sort=-species');
-        assert.end();
-      });
-  });
-
-  t.test('GET /animals?species=Dog', (assert) => {
-    request.get('/animals?species=Dog')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?species=Dog');
-        assert.end();
-      });
-  });
-
-  t.test('GET /animals?species=Dog&color=purple', (assert) => {
-    request.get('/animals?species=Dog&color=purple')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?species=Dog&color=purple');
-        assert.end();
-      });
-  });
-
-  t.test('GET /animals?fields[animal]=color', (assert) => {
-    request.get('/animals?fields[animal]=color')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(200)
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'GET /animals?fields[animal]=color');
-        assert.end();
-      });
-  });
-
-  t.test('POST /computers with no uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            type: 'Supercomputer',
-          },
-        },
-      }))
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with no uuid should give 400');
-        assert.end();
-      });
-  });
-
-  t.test('POST /computers with uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(201)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            uuid: 1,
-            type: 'Laptop',
-          },
-        },
-      }))
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with uuid should give 201');
-        assert.end();
-      });
-  });
-
-  t.test('POST /computers with same uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            uuid: 1,
-            type: 'Destop',
-          },
-        },
-      }))
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with same uuid should give 400');
-        assert.end();
-        restle.disconnect();
-      });
-  });
-
-  restle.on('disconnect', () => {
-    console.log('Disconnecting!');
-    t.end();
-  });
+test('try and find billy', assert => {
+  person.findResource(1)
+    .catch(err => {
+      assert.equal(err, 'Resource not found.');
+      assert.end();
+      app.disconnect();
+    });
 });

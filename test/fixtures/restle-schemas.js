@@ -1,23 +1,58 @@
 export default {
   person: {
-    name: { attr: 'string' },
-    pets: { hasMany: 'animal' },
+    attributes: {
+      name: { type: 'string', },
+      email: { type: 'string', },
+    },
+    relationships: {
+      pets: { type: 'animal', isMany: true },
+      company: { type: 'company', isMany: false },
+    },
   },
 
   animal: {
-    species: { attr: 'string' },
-    color: { attr: 'string' },
-    bones: { hasMany: 'bone' },
-    owner: { belongsTo: 'person' },
+    attributes: {
+      species: { type: 'string' },
+      age: { type: 'number' },
+    },
+    relationships: {
+      owner: { type: 'person', isMany: false },
+      habitats: { type: 'habitat', isMany: true },
+    },
   },
 
-  bone: {
-    isDinosaurBone: { attr: 'boolean' },
-    body: { belongsTo: 'animal' },
+  company: {
+    attributes: {
+      name: { type: 'string' },
+      industry: { type: 'string' },
+    },
+    relationships: {
+      employees: { type: 'person', isMany: true },
+      office: { type: 'building', isMany: false },
+    },
   },
 
-  computer: {
-    uuid: { attr: 'string', required: true, unique: true },
-    type: { attr: 'string' },
+  habitat: {
+    attributes: {
+      name: { type: 'string' },
+    },
+    relationships: {
+      countries: { type: 'country', isMany: true },
+    },
+  },
+
+  building: {
+    attributes: {
+      size: { type: 'number' },
+    },
+    relationships: {
+      location: { type: 'country', isMany: false },
+    },
+  },
+
+  country: {
+    attributes: {
+      name: { type: 'name' },
+    },
   },
 };

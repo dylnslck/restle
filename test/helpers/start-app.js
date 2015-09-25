@@ -10,7 +10,6 @@ const restle = new Restle({
 
 restle.register('person', schemas.person);
 restle.register('animal', schemas.animal);
-restle.register('bone', schemas.bone);
 restle.register('computer', schemas.computer);
 
 export default restle;
