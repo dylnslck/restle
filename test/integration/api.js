@@ -976,13 +976,13 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?species=Dog&color=purple', (assert) => {
-    request.get('/animals?species=Dog&color=purple')
+  t.test('GET /animals?species=Zebra&age=14', (assert) => {
+    request.get('/animals?species=Zebra&age=14')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
         console.log(res.body);
-        assert.error(err, 'GET /animals?species=Dog&color=purple');
+        assert.error(err, 'GET /animals?species=Zebra&age=14');
         assert.end();
       });
   });
