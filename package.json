@@ -1,6 +1,6 @@
 {
   "name": "restle",
-  "version": "0.3.0-alpha.3",
+  "version": "0.3.0-alpha.4",
   "description": "JSON API engine.",
   "main": "dist/lib/index.js",
   "repository": {
@@ -29,28 +29,22 @@
     "express": "^4.7.2",
     "i": "^0.3.3",
     "lodash": "^3.10.1",
-    "mongoose": "^3.8.20",
-    "prettyjson": "^1.1.2",
     "prompt": "^0.2.14",
-    "string-template": "^0.2.1",
-    "tape": "^4.0.0"
+    "string-template": "^0.2.1"
   },
   "bin": {
     "restle": "./bin/restle"
   },
   "devDependencies": {
     "babel-eslint": "^4.0.5",
-    "blue-tape": "^0.1.10",
     "coveralls": "^2.11.3",
     "eslint": "^0.24.1",
     "faker": "^3.0.1",
     "mkdirp": "^0.5.1",
-    "mocha": "^2.2.5",
-    "mongodb": "^2.0.39",
     "rimraf": "^2.4.0",
     "supertest": "^1.0.1",
     "tap-spec": "^4.0.2",
-    "tapes": "^2.0.0"
+    "tape": "^4.2.1"
   },
   "scripts": {
     "clean": "rimraf dist coverage",
