@@ -6,67 +6,77 @@ Restle
 [![Build Status](https://travis-ci.org/dcslack/restle.svg)](https://travis-ci.org/dcslack/restle)
 [![npm version](https://badge.fury.io/js/restle.svg)](http://badge.fury.io/js/restle)
 
-Restle is a lightweight *(and unstable)* [JSON API](http://jsonapi.org) engine compatible with [Ember Data](http://emberjs.com/api/data/). This library wraps Express and Mongoose. This is alpha software and not recommended for use in
-production code.
+Restle is a powerful database-agnostic [JSON API](http://jsonapi.org) engine and ORM that exposes data via RESTful routes. Restle manages your data objects and the relationships between them while being backed by a persistence layer of your choice. Restle ships with an in-memory adapter and finely tuned before/after data events.
 
-Not all features in the JSON API specification are implemented yet: fields, voluntary inclusion, and some other small things.
-I'm trying to match the test suite as close as possible with the JSON API spec. Reach out on GitHub for feature requests and
-any bugs you encounter, thanks!
+Restle is compatible with [Ember Data](http://emberjs.com/api/data/) right out of the box.
+
+This software is still very new and buggy, please report bugs on GitHub.
 
 Getting started
 ====
 
 ```sh
 $ npm install restle --save
+$ npm install restle-mongodb --save
 ```
 
 ```js
-// API: http://localhost:1337/api/
-import Restle from 'restle';
+const Restle = require('restle');
+const port = process.env.PORT || 5000;
+const namespace = 'api';
 
-const restle = new Restle({
-  port: 1337,
-  database: 'mongodb://...',
-  namespace: '/api',
-  cors: ['http://localhost:4200', 'https://example.com']
-});
+// lets use the in-memory adapter for development
+const Adapter = require('restle-mongodb');
+const adapter = process.env.NODE_ENV === 'production'
+  ? new Adapter({ url: 'mongodb://...' });
+  : null;
+
+// API: http://localhost:1337/api/
+const app = new Restle({ port, adapter, namespace });
 
 // define schemas
 const userSchema = {
-  name: { attr: 'string' },
-  birthday: { attr: 'date' },
-  isMarried: { attr: 'boolean' },
-  articles: { hasMany: 'article' },
-  company: { belongsTo: 'company' },
+  attributes: {
+    name: { type: 'string' },
+    birthday: { type: 'date' },
+    isMarried: { type: 'boolean' },  
+  },
+  relationships: {
+    articles: { type: 'article', isMany: true },
+    company: { type: 'company', isMany: false },
+  },
 };
 
 const articleSchema = {
-  title: { attr: 'string' },
-  body: { attr: 'string' },
-  createdOn: { attr: 'date' },
+  attributes: {
+    title: { type: 'string' },
+    body: { type: 'string' },
+    createdOn: { type: 'date' },  
+  },
 };
 
 const companySchema = {
-  name: { attr: 'string' },
-  employees: { hasMany: 'user' },
+  attributes: {
+    name: { type: 'string' },
+  },
+  relationships: {
+    employees: { type: 'user', isMany: true }
+  },
 };
 
 // register schemas
-restle.register('user', userSchema);
-restle.register('article', articleSchema);
-restle.register('company', companySchema);
+app.register('user', userSchema);
+app.register('article', articleSchema);
+app.register('company', companySchema);
 
 // check out some events
-restle.on('ready', () => {
-  console.log('Database has connected!');
-});
+app.on('ready', () => console.log(`App is running on ${app.port}!`);
 
 // verify the user with a JSON Web Token
 // all events except ready have express `req`, `res`, and `next` arguments
-import jwt from 'jsonwebtoken';
+const jwt = require('jsonwebtoken');
 
-restle.on('before', (req, res, next) => {
-  console.log('Intercept all requests to your API.');
+app.before(function(req, res, next) {
   const token = req.get('authorization');
   const secret = new Buffer(process.env.SECRET_KEY, 'base64');
 
@@ -84,44 +94,38 @@ restle.on('before', (req, res, next) => {
   });
 });
 
-// add a company to a user if there isn't one
-restle.on('user.create', (req, res, next) => {
-  console.log('Fires before creating a user.');
+// hash a users password before creating
+const bcrypt = require('bcrypt');
 
-  // Mongoose object
-  const company = restle.model('company');
+app.before('user.create', function(req, res, next) {
+  const numRounds = 10;
+  const password = req.body.data.attributes.password;
 
-  if (!req.body.data.relationships.company) {
-    company.find({}, (err, companies) => {
-      if (err) {
-        return res.sendStatus(500);
-      }
+  bcrypt.hash(password, numRounds, (err, hash) => {
+    if (err) {
+      return res.status(500).json(err);
+    }
 
-      req.body.data.relationships.company = {
-        type: 'company',
-        id: companies[0]._id;
-      };
-
-      next();
-    });  
-  }
+    req.body.data.attributes.password = hash;
+    return next();
+  });
 });
 ```
+```js
+// Complete list of events for the user model:
+app.before('user.find', function(req, res, next) { ... })
+app.after('user.find', function(users, req, res, next) { ... })
 
-Complete list of events for the user model:
-* user.find
-* user.create
-* user.findOne
-* user.update
-* user.delete
-* user.findRelationship
-* user.appendRelationship
-* user.updateRelationship
-* user.deleteRelationship
+app.before('user.create', function(req, res, next) { ... })
+app.after('user.create', function(user, req, res, next) { ... })
+
+app.before('user.update', function(req, res, next) { ... })
+app.after('user.update', function(user, req, res, next) { ... })
+```
 
 ```js
 // request
-GET /users HTTP/1.1
+GET /api/users HTTP/1.1
 Accept: application/vnd.api+json
 
 // response
