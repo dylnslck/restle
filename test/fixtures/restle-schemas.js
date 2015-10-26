@@ -1,12 +1,17 @@
 export default {
   person: {
     attributes: {
-      name: { type: 'string', },
-      email: { type: 'string', },
+      'name': { type: 'string', },
+      'email': { type: 'string', },
+      'age': { type: 'number', },
     },
     relationships: {
-      pets: { type: 'animal', isMany: true },
-      company: { type: 'company', isMany: false },
+      'pets': { type: 'animal', isMany: true },
+      'company': { type: 'company', isMany: false },
+    },
+    filters: {
+      'older-than': { attribute: 'age', operator: '>' },
+      'younger-than': { attribute: 'age', operator: '<' },
     },
   },
 
