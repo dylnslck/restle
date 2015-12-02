@@ -360,6 +360,49 @@ export default (t, app) => new Promise(resolve => {
       assert.ok(pets instanceof ResourceArray, 'related pets is a resource array');
       assert.equal(pets.resources.length, 1, 'only one pet was found this time');
       assert.equal(pets.resources[0].attribute('species'), 'Zebra', 'filtered animal is a Zebra');
+
+      return app.model('animal').findRelated(1, 'owner');
+    }).then(owner => {
+      assert.ok(owner instanceof Resource, 'related owner is a resource');
+      assert.equal(owner.attribute('name'), 'Bob', 'related owner name attribute is good');
+      assert.equal(owner.attribute('age'), 22, 'related owner name attribute is good');
+
+      return owner.get('pets');
+    }).then(pets => {
+      assert.ok(pets instanceof ResourceArray, 'related pets is a resource array');
+      assert.equal(pets.resources.length, 2, 'two pets was found this time');
+      app.adapter.store = {};
+      assert.end();
+    });
+  });
+
+  t.test(`app.model.get`, assert => {
+    Promise.all([
+      app.model('person').create({ name: 'Bob', age: 22, pets: [ 1 ], company: 1 }),
+      app.model('animal').create({ species: 'Snake', age: 10, owner: 1, habitats: [ 1 ] }),
+      app.model('habitat').create({ name: 'Tropical', countries: [ 1 ] }),
+      app.model('country').create({ name: 'Brazil' }),
+      app.model('country').create({ name: 'USA' }),
+      app.model('company').create({ name: 'Apple', industry: 'Computers', employees: [ 1 ], office: 1 }),
+      app.model('building').create({ size: 10, location: 2 })
+    ]).then(results => {
+      assert.equal(results.length, 7, 'seven records were created');
+
+      return app.model('person').findRelated(1, 'company');
+    }).then(company => {
+      assert.ok(company instanceof Resource, 'related company is a resource');
+      assert.equal(company.attribute('name'), 'Apple', 'company name attribute is good');
+      assert.equal(company.attribute('industry'), 'Computers', 'company computers attribute is good');
+
+      return company.get('office');
+    }).then(office => {
+      assert.ok(office instanceof Resource, 'related office is a resource');
+      assert.equal(office.attribute('size'), 10, 'company name attribute is good');
+
+      return office.get('location');
+    }).then(location => {
+      assert.ok(location instanceof Resource, 'related location is a resource');
+      assert.equal(location.attribute('name'), 'USA', 'location name attribute is good');
       assert.end();
     });
   });
