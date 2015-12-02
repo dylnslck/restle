@@ -1,26 +1,10 @@
-import Restle from '../../../dist/lib';
-import Resource from '../../../dist/lib/model/resource';
-import Relationship from '../../../dist/lib/model/relationship';
-import ResourceArray from '../../../dist/lib/model/resource-array';
-import schemas from '../fixtures/restle-schemas';
-
 import Promise from 'bluebird';
-import test from 'tape';
-import before from 'tape';
 import supertest from 'supertest';
 
-const app = new Restle({ namespace: 'api', port: 1337 });
-const person = app.register('person', schemas.person);
-const animal = app.register('animal', schemas.animal);
-const building = app.register('building', schemas.building);
-const habitat = app.register('habitat', schemas.habitat);
-const company = app.register('company', schemas.company);
-const country = app.register('country', schemas.country);
-
-test('Restle integration tests', (t) => {
+export default (t, app) => new Promise(resolve => {
   const request = supertest('http://localhost:1337/api');
 
-  t.test('GET /people (first time)', (assert) => {
+  t.test('GET /people (first time)', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -32,6 +16,9 @@ test('Restle integration tests', (t) => {
           links: {
             self: `/api/people`,
           },
+          meta: {
+            total: 0,
+          },
           data: [],
           included: [],
         }, 'response body should look good with a links and data members');
@@ -39,7 +26,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /people (without data)', (assert) => {
+  t.test('POST /people (without data)', assert => {
     request.post('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -53,7 +40,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /people (without data.type)', (assert) => {
+  t.test('POST /people (without data.type)', assert => {
     request.post('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .send(JSON.stringify({ data: { invalidData: true }}))
@@ -68,7 +55,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /people (with bad data.type)', (assert) => {
+  t.test('POST /people (with bad data.type)', assert => {
     request.post('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .send(JSON.stringify({ data: { type: 'animal' }}))
@@ -81,7 +68,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /people (with data.type and attributes)', (assert) => {
+  t.test('POST /people (with data.type and attributes)', assert => {
     request.post('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .send(JSON.stringify({
@@ -89,6 +76,8 @@ test('Restle integration tests', (t) => {
           type: 'person',
           attributes: {
             name: 'Bobby Jones',
+            age: 22,
+            email: 'bjones@gmail.com',
           },
         },
       }))
@@ -97,7 +86,7 @@ test('Restle integration tests', (t) => {
       .end((err, res) => {
         const body = res.body;
         assert.error(err, 'successfully created should give 201');
-        assert.equal(res.headers.location, `/api/people/${body.data.id}`, 'the location header matches the links self member');
+        //assert.equal(res.headers.location, `/api/people/${body.data.id}`, 'the location header matches the links self member');
 
         assert.deepEqual(body, {
           links: {
@@ -108,6 +97,8 @@ test('Restle integration tests', (t) => {
             id: body.data.id,
             attributes: {
               name: 'Bobby Jones',
+              age: 22,
+              email: 'bjones@gmail.com',
             },
             relationships: {
               pets: {
@@ -132,7 +123,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /animals then POST /people with animal relationship', (assert) => {
+  t.test('POST /animals then POST /people with animal relationship', assert => {
     request.post('/animals')
       .set('Content-Type', 'application/vnd.api+json')
       .send(JSON.stringify({
@@ -202,6 +193,7 @@ test('Restle integration tests', (t) => {
           .expect(201)
           .end((errPerson, resPerson) => {
             const bodyPerson = resPerson.body;
+
             assert.error(errPerson, 'successfully created person should give 201');
             assert.deepEqual(bodyPerson, {
               links: {
@@ -238,6 +230,14 @@ test('Restle integration tests', (t) => {
                   species: 'Dog',
                   age: 5,
                 },
+                relationships: {
+                  owner: {
+                    data: null
+                  },
+                  habitats: {
+                    data: [],
+                  },
+                },
                 id: `${body.data.id}`,
                 type: 'animal',
                 links: {
@@ -263,10 +263,10 @@ test('Restle integration tests', (t) => {
         },
       }))
       .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(403)
+      .expect(404)
       .end((err, res) => {
         const body = res.body;
-        assert.error(err, 'PATCH /people/invalid should return a 403');
+        assert.error(err, 'PATCH /people/invalid should return a 404');
         // TODO: deep equal with errors
         assert.ok(body.errors, 'the errors object exists');
         assert.end();
@@ -319,7 +319,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then PATCH first user with new attributes', (assert) => {
+  t.test('GET /people then PATCH first user with new attributes', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -338,6 +338,8 @@ test('Restle integration tests', (t) => {
               id: `${id}`,
               attributes: {
                 name: 'New Name',
+                age: 22,
+                email: 'bjones@gmail.com',
               },
             },
           }))
@@ -353,10 +355,10 @@ test('Restle integration tests', (t) => {
     request.get(`/people/invalid`)
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(403)
+      .expect(404)
       .end((err, res) => {
         const body = res.body;
-        assert.error(err, 'GET /people/invalid should return a 403');
+        assert.error(err, 'GET /people/invalid should return a 404');
         // TODO: deep equal with errors
         assert.ok(body.errors, 'the errors object exists');
         assert.end();
@@ -377,7 +379,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people to check attributes', (assert) => {
+  t.test('GET /people to check attributes', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -405,6 +407,8 @@ test('Restle integration tests', (t) => {
                 id: `${id}`,
                 attributes: {
                   name: 'New Name',
+                  email: 'bjones@gmail.com',
+                  age: 22,
                 },
                 relationships: {
                   pets: {
@@ -430,7 +434,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /people/:id/relationships/pets', (assert) => {
+  t.test('GET /people then GET /people/:id/relationships/pets', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -481,7 +485,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then PATCH /people/:id/relationships/pets with []', (assert) => {
+  t.test('GET /people then PATCH /people/:id/relationships/pets with []', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -505,7 +509,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then POST /people/:id/relationships/pets with an animal', (assert) => {
+  t.test('GET /people then GET /animals then POST /people/:id/relationships/pets with an animal', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -543,7 +547,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then POST /animals/:id/relationships/owner with a person', (assert) => {
+  t.test('GET /people then GET /animals then POST /animals/:id/relationships/owner with a person', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -582,7 +586,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with an array of people', (assert) => {
+  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with an array of people', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -621,7 +625,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with a single person', (assert) => {
+  t.test('GET /people then GET /animals then PATCH /animals/:id/relationships/owner with a single person', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -659,7 +663,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then GET /animals/:id/relationships/owner', (assert) => {
+  t.test('GET /people then GET /animals then GET /animals/:id/relationships/owner', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -703,7 +707,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals then GET /animals/:id/owner', (assert) => {
+  t.test('GET /animals then GET /animals/:id/owner', assert => {
     request.get('/animals')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -769,7 +773,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals then GET /animals:id', (assert) => {
+  t.test('GET /animals then GET /animals:id', assert => {
     request.get('/animals')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -791,7 +795,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /people then GET /animals then DELETE /people/:id/relationships/pets with an animal', (assert) => {
+  t.test('GET /people then GET /animals then DELETE /people/:id/relationships/pets with an animal', assert => {
     request.get('/people')
       .set('Content-Type', 'application/vnd.api+json')
       .expect('Content-Type', /application\/vnd\.api\+json/)
@@ -830,7 +834,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals then DELETE /animals/:id then GET /animals to make sure there are none left', (assert) => {
+  t.test('GET /animals then DELETE /animals/:id then GET /animals to make sure there are none left', assert => {
     request.get('/animals')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
@@ -859,6 +863,9 @@ test('Restle integration tests', (t) => {
                   },
                   data: [],
                   included: [],
+                  meta: {
+                    total: 0,
+                  },
                 }, 'the animals body has correct links and empty data');
                 assert.end();
               });
@@ -866,7 +873,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('POST /animals with species cat, dog, zebra', (assert) => {
+  t.test('POST /animals with species cat, dog, zebra', assert => {
     request.post('/animals')
       .set('Content-Type', 'application/vnd.api+json')
       .send(JSON.stringify({
@@ -921,18 +928,21 @@ test('Restle integration tests', (t) => {
   });
 
   // TODO: deep equal
-  t.test('GET /animals?page[offset]=1&page[limit]=2', (assert) => {
+  t.test('GET /animals?page[offset]=1&page[limit]=2', assert => {
     request.get('/animals?page[offset]=1&page[limit]=2')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
+        const body = res.body;
+
         assert.error(err, 'GET /animals?page[offset]=1&page[limit]=1 should give 200');
+        assert.equal(res.body.data.length, 2, 'num results is good');
+        assert.equal(res.body.meta.total, 3, 'meta total property is good');
         assert.end();
       });
   });
 
-  t.test('GET /animals?sort=species,-age', (assert) => {
+  t.test('GET /animals?sort=species,-age', assert => {
     request.get('/animals?sort=species,-age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
@@ -943,7 +953,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?sort=-species,-age', (assert) => {
+  t.test('GET /animals?sort=-species,-age', assert => {
     request.get('/animals?sort=-species,-age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
@@ -954,7 +964,7 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?sort=-age', (assert) => {
+  t.test('GET /animals?sort=-age', assert => {
     request.get('/animals?sort=-age')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
@@ -965,105 +975,53 @@ test('Restle integration tests', (t) => {
       });
   });
 
-  t.test('GET /animals?species=Dog', (assert) => {
-    request.get('/animals?species=Dog')
+  t.test('GET /animals?filter[species]=Dog', assert => {
+    request.get('/animals?filter[species]=Dog')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
         assert.error(err, 'GET /animals?species=Dog');
+        assert.equal(res.body.meta.total, 1, 'only one animal that is a dog');
         assert.end();
       });
   });
 
-  t.test('GET /animals?species=Zebra&age=14', (assert) => {
-    request.get('/animals?species=Zebra&age=14')
+  t.test('GET /animals?filter[species]=Zebra&filter[age]=14', assert => {
+    request.get('/animals?filter[species]=Zebra&filter[age]=14')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
         assert.error(err, 'GET /animals?species=Zebra&age=14');
+        assert.equal(res.body.meta.total, 1, 'only one animal that is a zebra and 14');
         assert.end();
       });
   });
 
-  t.test('GET /animals?fields[animal]=age', (assert) => {
-    request.get('/animals?fields[animal]=age')
+  t.test('GET /animals?filter[age][$gt]=10', assert => {
+    request.get('/animals?filter[age][$gt]=10')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
-        console.log(res.body.data[0].attributes);
-        assert.error(err, 'GET /animals?fields[animal]=age');
+        assert.error(err, 'GET /animals?filter[age][$gt]=10');
+        assert.equal(res.body.meta.total, 1, 'only one animal that is a zebra');
+        assert.equal(res.body.data[0].attributes.species, 'Zebra', 'filtered result is indeed a Zebra');
         assert.end();
       });
   });
 
-  t.test('POST /computers with no uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
+  t.test('GET /animals?filter[age][$gt]=14', assert => {
+    request.get('/animals?filter[age][$gt]=14')
       .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            type: 'Supercomputer',
-          },
-        },
-      }))
+      .expect(200)
       .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with no uuid should give 400');
+        assert.error(err, 'GET /animals?filter[age][$gt]=14');
+        assert.equal(res.body.meta.total, 0, 'no animals are older than 14');
         assert.end();
       });
   });
 
-  t.test('POST /computers with uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(201)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            uuid: 1,
-            type: 'Laptop',
-          },
-        },
-      }))
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with uuid should give 201');
-        assert.end();
-      });
-  });
-
-  t.test('POST /computers with same uuid', (assert) => {
-    request.post('/computers')
-      .set('Content-Type', 'application/vnd.api+json')
-      .expect('Content-Type', /application\/vnd\.api\+json/)
-      .expect(400)
-      .send(JSON.stringify({
-        data: {
-          type: 'computer',
-          attributes: {
-            uuid: 1,
-            type: 'Destop',
-          },
-        },
-      }))
-      .end((err, res) => {
-        console.log(res.body);
-        assert.error(err, 'POST /computers with same uuid should give 400');
-        assert.end();
-        app.disconnect();
-      });
-  });
-
-  app.on('disconnect', () => {
-    console.log('Disconnecting!');
-    t.end();
+  t.test('done', assert => {
+    assert.pass('finished');
+    resolve(true);
   });
 });
