@@ -329,6 +329,37 @@ export default (t, app) => new Promise(resolve => {
 
       return app.model('person').update(2, { pets: [] });
     }).then(person => {
+      app.adapter.store = {};
+      assert.equal(Object.keys(app.adapter.store).length, 0, 'store is cleared');
+      assert.end();
+    });
+  });
+
+  t.test(`app.model.findRelated`, assert => {
+    Promise.all([
+      app.model('person').create({ name: 'Bob', age: 22, pets: [ 1, 2 ] }),
+      app.model('person').create({ name: 'Jim', age: 26, pets: [ 2 ] }),
+      app.model('animal').create({ species: 'Aardvark', age: 4, owner: 1 }),
+      app.model('animal').create({ species: 'Zebra', age: 14, owner: 2 }),
+    ]).then(records => {
+      assert.equal(records.length, 4, 'four records were created');
+      assert.equal(app.adapter.store.person.length, 2, 'two people created');
+      assert.equal(app.adapter.store.animal.length, 2, 'two animals created');
+
+      return app.model('person').findRelated(1, 'pets');
+    }).then(pets => {
+      assert.ok(pets instanceof ResourceArray, 'related pets is a resource array');
+      assert.equal(pets.resources.length, 2, 'two pets were found');
+
+      return app.model('person').findRelated(1, 'pets', {
+        filter: {
+          age: { $gte: 14 },
+        },
+      });
+    }).then(pets => {
+      assert.ok(pets instanceof ResourceArray, 'related pets is a resource array');
+      assert.equal(pets.resources.length, 1, 'only one pet was found this time');
+      assert.equal(pets.resources[0].attribute('species'), 'Zebra', 'filtered animal is a Zebra');
       assert.end();
     });
   });
