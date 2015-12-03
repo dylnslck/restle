@@ -690,6 +690,7 @@ export default (t, app) => new Promise(resolve => {
               .expect(200)
               .end((relationshipErr, relationshipRes) => {
                 const relationshipBody = relationshipRes.body;
+
                 assert.error(relationshipErr, `GET /animals/${animalId}/relationships/owner should give 200`);
                 assert.deepEqual(relationshipBody, {
                   links: {
@@ -947,7 +948,6 @@ export default (t, app) => new Promise(resolve => {
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
         assert.error(err, 'GET /animals?sort=species,-age');
         assert.end();
       });
@@ -958,7 +958,6 @@ export default (t, app) => new Promise(resolve => {
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
         assert.error(err, 'GET /animals?sort=-species,-age');
         assert.end();
       });
@@ -969,7 +968,6 @@ export default (t, app) => new Promise(resolve => {
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
-        console.log(res.body);
         assert.error(err, 'GET /animals?sort=-age');
         assert.end();
       });

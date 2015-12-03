@@ -403,6 +403,141 @@ export default (t, app) => new Promise(resolve => {
     }).then(location => {
       assert.ok(location instanceof Resource, 'related location is a resource');
       assert.equal(location.attribute('name'), 'USA', 'location name attribute is good');
+      app.adapter.store = {};
+      assert.end();
+    });
+  });
+
+  t.test(`app.resoure.serialize (1)`, assert => {
+    app.model('person').create({
+      name: 'Jimbo',
+      age: 21,
+    }).then(person => {
+      return app.model('company').create({
+        name: 'Apple',
+        industry: 'Computers',
+        employees: [ 1 ],
+      });
+    }).then(company => {
+      return app.model('person').update(1, {
+        company: 1,
+      });
+    }).then(person => {
+      const serialize = person.serialize();
+
+      assert.deepEqual(serialize, {
+        links: {
+          self: `/people/1`,
+        },
+        data: {
+          id: '1',
+          type: 'person',
+          attributes: {
+            name: 'Jimbo',
+            age: 21,
+          },
+          relationships: {
+            pets: {
+              links: {
+                self: `/people/1/relationships/pets`,
+                related: `/people/1/pets`,
+              },
+              data: [],
+            },
+            company: {
+              links: {
+                self: `/people/1/relationships/company`,
+                related: `/people/1/company`,
+              },
+              data: {
+                type: 'company',
+                id: '1',
+              },
+            },
+          },
+        },
+        included: [{
+          id: '1',
+          type: 'company',
+          links: {
+            self: `/companies/1`,
+          },
+          attributes: {
+            name: 'Apple',
+            industry: 'Computers',
+          },
+          relationships: {
+            employees: {
+              data: [{
+                id: '1',
+                type: 'person',
+              }],
+            },
+            office: {
+              data: null,
+            },
+          },
+        }],
+      }, 'serialized person has proper json');
+      app.adapter.store = {};
+      assert.end();
+    });
+  });
+
+  t.test(`app.resoure.serialize (2)`, assert => {
+    Promise.all([
+      app.model('person').create({ name: 'Jimbo', age: 21, company: 1 }),
+      app.model('company').create({ name: 'Apple', industry: 'Computers', employees: [ 1 ] })
+    ]).then(results => {
+      assert.equal(results.length, 2, 'two resources created');
+      assert.deepEqual(results[0].serialize(), {
+        links: {
+          self: `/people/1`,
+        },
+        data: {
+          id: '1',
+          type: 'person',
+          attributes: {
+            name: 'Jimbo',
+            age: 21,
+          },
+          relationships: {
+            pets: {
+              links: {
+                self: `/people/1/relationships/pets`,
+                related: `/people/1/pets`,
+              },
+              data: [],
+            },
+            company: {
+              links: {
+                self: `/people/1/relationships/company`,
+                related: `/people/1/company`,
+              },
+              data: {
+                type: 'company',
+                id: '1',
+              },
+            },
+          },
+        },
+        included: [{
+          id: '1',
+          type: 'company',
+          attributes: {
+            name: 'Apple',
+            industry: 'Computers',
+          },
+          relationships: {
+            pets: {
+              data: [{
+                id: '1',
+                type: 'person',
+              }],
+            },
+          },
+        }],
+      }, 'serialized person has proper json');
       assert.end();
     });
   });
