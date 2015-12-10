@@ -65,9 +65,11 @@ const companySchema = {
 };
 
 // register schemas
-app.register('user', userSchema);
-app.register('article', articleSchema);
-app.register('company', companySchema);
+app.register({
+  user: userSchema,
+  article: articleSchema,
+  company: companySchema,
+});
 
 // check out some events
 app.on('ready', () => console.log(`App is running on ${app.port}!`);

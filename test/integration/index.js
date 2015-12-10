@@ -9,39 +9,53 @@ import router from './router';
 
 const app = new Restle({ namespace: 'api', port: 1337 });
 
-const person = app.register('person', schemas.person);
-const animal = app.register('animal', schemas.animal);
-const building = app.register('building', schemas.building);
-const habitat = app.register('habitat', schemas.habitat);
-const company = app.register('company', schemas.company);
-const country = app.register('country', schemas.country);
-const models = { person, animal, building, habitat, company, country };
-
-// adapter -> model -> router
-test('adapter tests', t => {
-  adapter(t, app, models).then(success => {
-    t.ok(success, 'adapter tests were successful');
-    t.end();
-  });
+app.register({
+  person: schemas.person,
+  animal: schemas.animal,
+  building: schemas.building,
+  habitat: schemas.habitat,
+  company: schemas.company,
+  country: schemas.country,
 });
 
-test('model tests', t => {
-  model(t, app).then(success => {
-    t.ok(success, 'model tests were successful');
-    t.end();
-  });
-});
+app.on('ready', () => {
+  console.log('App is ready!');
 
-test('router tests', t => {
-  router(t, app).then(success => {
-    t.ok(success, 'router tests were successful');
-    t.end();
-  });
-});
+  // adapter -> model -> router
+  test('adapter tests', t => {
+    const models = {
+      person: app.model('person'),
+      animal: app.model('animal'),
+      building: app.model('building'),
+      habitat: app.model('habitat'),
+      company: app.model('company'),
+      country: app.model('country'),
+    };
 
-test('teardown', t => {
-  app.disconnect().then(() => {
-    t.pass('app disconnected');
-    t.end();
+    adapter(t, app, models).then(success => {
+      t.ok(success, 'adapter tests were successful');
+      t.end();
+    });
+  });
+
+  test('model tests', t => {
+    model(t, app).then(success => {
+      t.ok(success, 'model tests were successful');
+      t.end();
+    });
+  });
+
+  test('router tests', t => {
+    router(t, app).then(success => {
+      t.ok(success, 'router tests were successful');
+      t.end();
+    });
+  });
+
+  test('teardown', t => {
+    app.disconnect().then(() => {
+      t.pass('app disconnected');
+      t.end();
+    });
   });
 });
