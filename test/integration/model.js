@@ -63,6 +63,21 @@ export default (t, app) => new Promise(resolve => {
     });
   });
 
+  t.test(`app.model.findOne`, assert => {
+    return app.model('person').findOne({
+      filter: { name: 'Joe' },
+    }).then(person => {
+      assert.ok(person instanceof Resource, 'found one person is a resource');
+
+      return app.model('person').findOne({
+        filter: { name: 'IDontExist' },
+      });
+    }).then(person => {
+      assert.equal(person, null, 'found person does not exist');
+      assert.end();
+    })
+  })
+
   t.test(`app.model.update`, assert => {
     app.model('animal').update(1, {
       age: 11,
