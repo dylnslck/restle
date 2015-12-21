@@ -978,6 +978,17 @@ export default (t, app) => new Promise(resolve => {
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
+        assert.error(err, 'GET /animals?species[filter]=Dog');
+        assert.equal(res.body.meta.total, 1, 'only one animal that is a dog');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?species=Dog', assert => {
+    request.get('/animals?species=Dog')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
         assert.error(err, 'GET /animals?species=Dog');
         assert.equal(res.body.meta.total, 1, 'only one animal that is a dog');
         assert.end();
@@ -986,6 +997,17 @@ export default (t, app) => new Promise(resolve => {
 
   t.test('GET /animals?filter[species]=Zebra&filter[age]=14', assert => {
     request.get('/animals?filter[species]=Zebra&filter[age]=14')
+      .expect('Content-Type', /application\/vnd\.api\+json/)
+      .expect(200)
+      .end((err, res) => {
+        assert.error(err, 'GET /animals?filter[species]=Zebra&filter[age]=14');
+        assert.equal(res.body.meta.total, 1, 'only one animal that is a zebra and 14');
+        assert.end();
+      });
+  });
+
+  t.test('GET /animals?species=Zebra&age=14', assert => {
+    request.get('/animals?species=Zebra&age=14')
       .expect('Content-Type', /application\/vnd\.api\+json/)
       .expect(200)
       .end((err, res) => {
