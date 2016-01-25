@@ -3,7 +3,7 @@ Restle
 
 [![Join the chat at https://gitter.im/dcslack/restle](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/dcslack/restle?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-[![Build Status](https://travis-ci.org/dcslack/restle.svg)](https://travis-ci.org/dcslack/restle)
+[![Build Status](https://travis-ci.org/dylnslck/restle.svg)](https://travis-ci.org/dcslack/restle)
 [![npm version](https://badge.fury.io/js/restle.svg)](http://badge.fury.io/js/restle)
 
 Restle is a powerful database-agnostic [JSON API](http://jsonapi.org) engine and ORM that exposes data via RESTful routes. Restle manages your data objects and the relationships between them while being backed by a persistence layer of your choice. Restle ships with an in-memory adapter and finely tuned before/after data events.
