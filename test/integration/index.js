@@ -9,14 +9,7 @@ import router from './router';
 
 const app = new Restle({ namespace: 'api', port: 1337 });
 
-app.register({
-  person: schemas.person,
-  animal: schemas.animal,
-  building: schemas.building,
-  habitat: schemas.habitat,
-  company: schemas.company,
-  country: schemas.country,
-});
+app.register(schemas);
 
 app.on('ready', () => {
   console.log('App is ready!');
