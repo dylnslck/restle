@@ -5,6 +5,7 @@ export default class Resource {
    * @param {Model} model
    * @param {Object} data
    */
+
   constructor(model, data) {
 
   }
@@ -25,8 +26,9 @@ export default class Resource {
    * ```
    *
    * @param {String} relationship
-   * @return {Promise<Resource>}
+   * @return {Promise<Resource|ResourceArray>}
    */
+
   fetch(relationship) {
 
   }
@@ -41,6 +43,7 @@ export default class Resource {
    * @param {String} attribute
    * @return {String|Number|Boolean|Date}
    */
+
   attribute(attribute) {
 
   }
@@ -55,6 +58,7 @@ export default class Resource {
    * @param {String} relationship
    * @return {Relationship}
    */
+
   relationship(relationship) {
 
   }
@@ -76,6 +80,7 @@ export default class Resource {
    * @param {Object} data
    * @return {Promise<Resource>}
    */
+
   update(data) {
 
   }
@@ -91,6 +96,7 @@ export default class Resource {
    *
    * @return {Promise<Boolean>}
    */
+
   delete() {
 
   }
