@@ -28,7 +28,6 @@ export default class Restle extends EventEmitter {
    * @param {Number} [options.port=5000]
    * @param {String} [options.namespace='api']
    */
-
   constructor(options = {}) {
 
   }
@@ -42,9 +41,8 @@ export default class Restle extends EventEmitter {
    * ```
    *
    * @param {String} name
-   * @return {Model}
+   * @returns {Model}
    */
-
   model(name) {
 
   }
@@ -56,7 +54,6 @@ export default class Restle extends EventEmitter {
    *
    * @param {Object} schemas
    */
-
   register(schemas) {
 
   }
@@ -67,7 +64,6 @@ export default class Restle extends EventEmitter {
    *
    * @param {Function} cb
    */
-
   ready(cb) {
 
   }
@@ -87,11 +83,11 @@ export default class Restle extends EventEmitter {
    * });
    * ```
    *
+   * @param {String} [event] - Either the event name or callback.
+   * @param {Function} cb
+   *
    * @todo Figure out arguments for the callbacks.
-   * @param {String|Function} event - Either the event name or callback.
-   * @param {Function} [cb]
    */
-
   before(event, cb) {
 
   }
@@ -112,11 +108,11 @@ export default class Restle extends EventEmitter {
    * });
    * ```
    *
+   * @param {String} [event] - Either the event name or callback.
+   * @param {Function} cb
+   *
    * @todo Figure out the arguments for the callbacks.
-   * @param {String|Function} event - Either the event name or callback.
-   * @param {Function} [cb]
    */
-
   after(event, cb) {
 
   }

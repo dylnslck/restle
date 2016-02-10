@@ -39,8 +39,9 @@ export default class Model {
    * The omission of an operator, such as the `username` filter in the example
    * above, assumes that the `$eq` operator should be invoked.
    *
-   * @param  {Object} [options={}]
-   * @return {Promise<ResourceArray>}
+   * @async
+   * @param {Object} [options={}]
+   * @returns {ResourceArray}
    */
   find(options = {}) {
 
@@ -50,8 +51,9 @@ export default class Model {
    * Returns the first object found matching the options criteria. This is
    * identical to `find` but extracts the first resource.
    *
-   * @param  {Object} [options={}]
-   * @return {Promise<Resource>}
+   * @async
+   * @param {Object} [options={}]
+   * @returns {Resource}
    */
   findOne(options = {}) {
 
@@ -66,8 +68,9 @@ export default class Model {
    * });
    * ```
    *
-   * @param  {String} id
-   * @return {Promise<Resource>}
+   * @async
+   * @param {String} id
+   * @returns {Resource}
    */
   findResource(id) {
 
@@ -96,10 +99,11 @@ export default class Model {
    * });
    * ```
    *
-   * @param  {String} id - The ID of the parent resource.
-   * @param  {String} relationship - The relationship to the parent.
-   * @param  {Object} [options={}] - Same options object used by `find`.
-   * @return {Promise<Resource|ResourceArray}
+   * @async
+   * @param {String} id - The ID of the parent resource.
+   * @param {String} relationship - The relationship to the parent.
+   * @param {Object} [options={}] - Same options object used by `find`.
+   * @returns {Resource|ResourceArray}
    */
   findRelated(id, relationship, options = {}) {
 
@@ -122,8 +126,9 @@ export default class Model {
    * });
    * ```
    *
-   * @param  {Object} data
-   * @return {Promise<Resource>}
+   * @async
+   * @param {Object} data
+   * @returns {Resource}
    */
   create(data) {
 
@@ -143,9 +148,10 @@ export default class Model {
    * });
    * ```
    *
-   * @param  {String} id - The ID of the resource to update.
-   * @param  {Object} data
-   * @return {Promise<Resource>}
+   * @async
+   * @param {String} id - The ID of the resource to update.
+   * @param {Object} data
+   * @returns {Resource}
    */
   update(id, data) {
 
@@ -155,8 +161,9 @@ export default class Model {
    * Deletes a record from the database and resolves to true if that operation
    * succeeded.
    *
-   * @param  {String} id - The ID of the resource to delete.
-   * @return {Promise<Boolean>}
+   * @async
+   * @param {String} id - The ID of the resource to delete.
+   * @returns {Boolean}
    */
   delete(id) {
 

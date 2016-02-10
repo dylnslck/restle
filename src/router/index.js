@@ -1,9 +1,18 @@
 export default class Router {
+  /**
+   * Instantiates a Router.
+   *
+   * @param {Object} [options={}]
+   * @param {Number} [options.port=5000]
+   * @param {String} [options.namespace=api]
+   * @param {String} [options.version=v1]
+   * @returns {Router}
+   */
   constructor(options = {}) {
 
   }
 
-  connect() {
+  connect(add) {
 
   }
 
@@ -12,6 +21,6 @@ export default class Router {
   }
 
   setup(routes) {
-    
+
   }
 }
