@@ -75,7 +75,7 @@ export default class Restle extends EventEmitter {
   /**
    * Fires before a request touches the adapter. If this function takes one
    * argument, then the callback is fired before every request. This is an
-   * opportunity to perform things like authenication and logging.
+   * opportunity to perform things like authentication and logging.
    *
    * ```js
    * app.before((...) => {
