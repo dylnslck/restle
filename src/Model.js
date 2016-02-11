@@ -1,27 +1,19 @@
 /* eslint-disable no-unused-vars */
+/** The Model class. */
 export default class Model {
+  /**
+   * Instantiates a model instance.
+   *
+   * @private
+   * @constructor
+   * @param {String} name
+   * @param {Object} schema
+   */
   constructor(name, schema) {
-
   }
 
   /**
    * Finds resources that match the options criteria.
-   *
-   * ```js
-   * app.model('user').find({
-   *   page: { offset: 20, limit: 40 },
-   *   sort: { name: 'asc', age: 'desc' },
-   *   fields: { password: false },
-   *   include: { pets: false }
-   *   filter: {
-   *     age: { $gt: 20, $lte: 10 },
-   *     name: { $in: [ 'Billy', 'Bob' ] },
-   *     username: 'billybob',
-   *   },
-   * }).then(users => {
-   *   // ResourceArray
-   * });
-   * ```
    *
    * The `options` argument allows for pagination, sorting, sparse fieldsets,
    * filtering and related resource inclusion. These data fetching mechanisms
@@ -40,31 +32,47 @@ export default class Model {
    * The omission of an operator, such as the `username` filter in the example
    * above, assumes that the `$eq` operator should be invoked.
    *
-   * @async
-   * @param {Object} [options={}]
-   * @returns {ResourceArray}
-   */
-  find(options = {}) {
-
-  }
-
-  /**
-   * Returns the first object found matching the options criteria. This is
-   * identical to `find` but extracts the first resource.
+   * ```js
+   * app.model('user').find({
+   *   page: { offset: 20, limit: 40 },
+   *   sort: { name: 'asc', age: 'desc' },
+   *   fields: { password: false },
+   *   include: { pets: false }
+   *   filter: {
+   *     age: { $gt: 20, $lte: 10 },
+   *     name: { $in: [ 'Billy', 'Bob' ] },
+   *     username: 'billybob',
+   *   },
+   * }).then(users => {
+   *   // ResourceArray
+   * });
+   * ```
    *
    * @async
    * @param {Object} [options={}]
+   * @returns {ResourceArray}
+   * @throws {AdapterError}
+   */
+  find(options = {}) {
+  }
+
+  /**
+   * Returns the first object found matching the options criteria.
+   *
+   * @see {@link find}
+   * @async
+   * @param {Object} [options={}]
    * @returns {Resource}
+   * @throws {AdapterError}
    */
   findOne(options = {}) {
-
   }
 
   /**
    * Retrieves a single resource of id `id`.
    *
    * ```js
-   * app.model('user').findResource('1234').then(user => {
+   * app.model('user').findResource('1').then(user => {
    *   // Resource
    * });
    * ```
@@ -72,20 +80,19 @@ export default class Model {
    * @async
    * @param {String} id
    * @returns {Resource}
+   * @throws {AdapterError}
    */
   findResource(id) {
-
   }
 
   /**
-   * Retrieves the resource(s) related to a particular resource identified by id
-   * according to the relationship. You can pass the same options as you would
-   * in find. A relationship with multiplicity of many returns a ResourceArray,
-   * and a relationship with a multiplicity of one returns a Resource.
+   * Retrieves the resource(s) related to a particular resource identified by `id`
+   * according to `relationship`. A relationship with multiplicity of many returns a
+   * ResourceArray, and a relationship with a multiplicity of one returns a Resource.
    *
    * ```js
-   * // pretend user `1234` has a ton of pets
-   * app.model('user').findRelated('1234', 'pets', {
+   * // pretend user `1` has a ton of pets
+   * app.model('user').findRelated('1', 'pets', {
    *   page: { offset: 20, limit: 40 },
    *   filter: {
    *     age: { $gt: 2, $lte: 5 },
@@ -95,19 +102,21 @@ export default class Model {
    *   // ResourceArray
    * });
    *
-   * app.model('user').findRelated('1234', 'company').then(company => {
+   * // pretend user `1` only has one company
+   * app.model('user').findRelated('1', 'company').then(company => {
    *   // Resource
    * });
    * ```
    *
+   * @see {@link find}
    * @async
    * @param {String} id - The ID of the parent resource.
    * @param {String} relationship - The relationship to the parent.
-   * @param {Object} [options={}] - Same options object used by `find`.
+   * @param {Object} [options={}]
    * @returns {Resource|ResourceArray}
+   * @throws {AdapterError}
    */
   findRelated(id, relationship, options = {}) {
-
   }
 
   /**
@@ -130,9 +139,9 @@ export default class Model {
    * @async
    * @param {Object} data
    * @returns {Resource}
+   * @throws {AdapterError}
    */
   create(data) {
-
   }
 
   /**
@@ -142,7 +151,7 @@ export default class Model {
    * interpreted as null.
    *
    * ```js
-   * app.model('user').update('1234', {
+   * app.model('user').update('1', {
    *   name: 'Dylan Slack',
    * }).then(user => {
    *   // Resource
@@ -153,20 +162,20 @@ export default class Model {
    * @param {String} id - The ID of the resource to update.
    * @param {Object} data
    * @returns {Resource}
+   * @throws {AdapterError}
    */
   update(id, data) {
-
   }
 
   /**
-   * Deletes a record from the database and resolves to true if that operation
+   * Deletes a record from the database and resolves to true if the operation
    * succeeded.
    *
    * @async
    * @param {String} id - The ID of the resource to delete.
    * @returns {Boolean}
+   * @throws {AdapterError}
    */
   delete(id) {
-
   }
 }
