@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export default class Serializer {
   constructor(options = {}) {
 
@@ -8,6 +9,6 @@ export default class Serializer {
   }
 
   deserialize() {
-    
+
   }
 }

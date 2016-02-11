@@ -17,8 +17,8 @@
   ],
   "homepage": "https://restle.io/",
   "scripts": {
-    "lint": "eslint ./src/**/*.js ./test/**/*.js",
-    "test": "babel-node ./test/index.js | faucet",
+    "lint": "eslint src test",
+    "test": "npm run lint && babel-node ./test/index.js | faucet",
     "cover": "babel-node ./node_modules/.bin/babel-istanbul cover ./test/index.js && cat ./coverage/lcov.info | ./node_modules/.bin/codecov"
   },
   "devDependencies": {

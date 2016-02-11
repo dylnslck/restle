@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export default class Resource {
   /**
    * Instantiates a new Resource.

@@ -1,3 +1,6 @@
+/* eslint-disable no-unused-vars */
+import { EventEmitter } from 'events';
+
 export default class Restle extends EventEmitter {
   /**
    * Instantiates a Restle app.

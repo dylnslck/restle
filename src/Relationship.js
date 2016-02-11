@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 export default class Relationship {
   constructor(parent, child) {
 

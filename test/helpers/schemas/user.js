@@ -1,26 +1,26 @@
 module.exports = {
   attributes: {
-    'name': {
+    name: {
       type: 'string',
-      required,
+      required: true,
     },
 
-    'email': {
+    email: {
       type: 'string',
-      required,
-      unique,
+      required: true,
+      unique: true,
     },
 
-    'password': {
+    password: {
       type: 'string',
       transforms: {
-        in() { /*...*/ },
-        out() { /*...*/ },
+        in() { /* ... */ },
+        out() { /* ... */ },
       },
-      required,
-    }
+      required: true,
+    },
 
-    'age': {
+    age: {
       type: 'number',
     },
 
@@ -29,27 +29,27 @@ module.exports = {
       default: true,
     },
 
-    'picture': {
+    picture: {
       type: 'buffer',
     },
 
     'last-updated': {
       type: 'date',
       trigger: Date.now,
-    }
+    },
 
-    'birthday': {
+    birthday: {
       type: 'date',
 
       transforms: {
-        in() { /*...*/ },
-        out() { /*...*/ },
+        in() { /* ... */ },
+        out() { /* ... */ },
       },
     },
   },
 
   relationships: {
-    'blogs': { type: 'blog', multiplicity: 'many' },
-    'comments': { type: 'comment', multiplicity: 'many' },
+    blogs: { type: 'blog', multiplicity: 'many' },
+    comments: { type: 'comment', multiplicity: 'many' },
   },
 };
