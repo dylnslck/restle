@@ -8,18 +8,21 @@ export default class Model {
    * @constructor
    * @param {String} name
    * @param {Object} schema
+   * @throws {ModelError}
    */
   constructor(name, schema) {
   }
 
   /**
-   * Finds resources that match the options criteria.
+   * Finds resources that match the `options` criteria.
    *
-   * The `options` argument allows for pagination, sorting, sparse fieldsets,
-   * filtering and related resource inclusion. These data fetching mechanisms
-   * are defined in the [JSON API specification](http://jsonapi.org/format/#fetching).
+   * The `options` argument allows for pagination, sorting, sparse fieldsets, filtering and related
+   * resource inclusion. These data fetching mechanisms are defined in the
+   * [JSON API specification](http://jsonapi.org/format/#fetching).
    *
-   * The following operators are allowed by filtering:
+   * The following operators are allowed for filtering, and they extend the JSON API filtering
+   * recommendation
+   * [JSON API filtering recommendation](http://jsonapi.org/recommendations/#filtering).
    *
    * 1. **$gt** - greater than
    * 2. **$gte** - greater or equal than
@@ -29,19 +32,19 @@ export default class Model {
    * 6. **$neq** - not equal to
    * 7. **$in** - includes
    *
-   * The omission of an operator, such as the `username` filter in the example
-   * above, assumes that the `$eq` operator should be invoked.
+   * The omission of an operator, such as the `country` filter in the example below invokes the
+   * '$eq' operator by default.
    *
    * ```js
    * app.model('user').find({
    *   page: { offset: 20, limit: 40 },
    *   sort: { name: 'asc', age: 'desc' },
    *   fields: { password: false },
-   *   include: { pets: false }
+   *   include: { pets: true },
    *   filter: {
-   *     age: { $gt: 20, $lte: 10 },
+   *     age: { $gt: 10, $lte: 20 },
    *     name: { $in: [ 'Billy', 'Bob' ] },
-   *     username: 'billybob',
+   *     country: 'US',
    *   },
    * }).then(users => {
    *   // ResourceArray
@@ -52,14 +55,16 @@ export default class Model {
    * @param {Object} [options={}]
    * @returns {ResourceArray}
    * @throws {AdapterError}
+   *
+   * @todo Do something with the ResourceArray in the example.
    */
   find(options = {}) {
   }
 
   /**
-   * Returns the first object found matching the options criteria.
+   * Finds the first resource that matches the `options` criteria.
    *
-   * @see {@link find}
+   * @see find
    * @async
    * @param {Object} [options={}]
    * @returns {Resource}
@@ -69,7 +74,7 @@ export default class Model {
   }
 
   /**
-   * Retrieves a single resource of id `id`.
+   * Retrieves the resource corresponding to `id`.
    *
    * ```js
    * app.model('user').findResource('1').then(user => {
@@ -81,14 +86,16 @@ export default class Model {
    * @param {String} id
    * @returns {Resource}
    * @throws {AdapterError}
+   *
+   * @todo Do something with the Resource in the example.
    */
   findResource(id) {
   }
 
   /**
-   * Retrieves the resource(s) related to a particular resource identified by `id`
-   * according to `relationship`. A relationship with multiplicity of many returns a
-   * ResourceArray, and a relationship with a multiplicity of one returns a Resource.
+   * Retrieves the resource(s) related to a particular resource identified by `id` according to
+   * `relationship`. A relationship with a multiplicity of `many` returns a `ResourceArray`, and a
+   * relationship with a multiplicity of `one` returns a `Resource`.
    *
    * ```js
    * // pretend user `1` has a ton of pets
@@ -102,27 +109,28 @@ export default class Model {
    *   // ResourceArray
    * });
    *
-   * // pretend user `1` only has one company
+   * // pretend user `1` has a company
    * app.model('user').findRelated('1', 'company').then(company => {
    *   // Resource
    * });
    * ```
    *
-   * @see {@link find}
+   * @see find
    * @async
-   * @param {String} id - The ID of the parent resource.
+   * @param {String} id - The id of the parent resource.
    * @param {String} relationship - The relationship to the parent.
    * @param {Object} [options={}]
    * @returns {Resource|ResourceArray}
-   * @throws {AdapterError}
+   * @throws {AdapterError|RelationshipError}
+   *
+   * @todo Do something with the Resource and ResourceArray in the example.
    */
   findRelated(id, relationship, options = {}) {
   }
 
   /**
-   * Persists a record in the database and creates a resource. The data object
-   * must be a flattened JSON with attributes and relationships, which are
-   * represented by ids.
+   * Persists a record in the database and creates a resource. The data object must be a flattened
+   * JSON with attributes and relationships, which are represented by ids.
    *
    * ```js
    * app.model('user').create({
@@ -130,7 +138,7 @@ export default class Model {
    *   email: 'dylanslack@gmail.com',
    *   password: 'supersecret',
    *   pets: [ '1', '2', '3' ],
-   *   company: '4',
+   *   company: '1',
    * }).then(user => {
    *   // Resource
    * });
@@ -140,39 +148,49 @@ export default class Model {
    * @param {Object} data
    * @returns {Resource}
    * @throws {AdapterError}
+   *
+   * @todo Do something with the Resource in the example.
    */
   create(data) {
   }
 
   /**
-   * Updates a record in the database and creates a resource. The data object
-   * must be a flattened JSON with attributes and relationships, which are
-   * represented by ids. Missing attributes and relationships are not
-   * interpreted as null.
+   * Updates a record in the database and creates a resource. The data object must be a flattened
+   * JSON with attributes and relationships, which are represented by ids. Missing attributes and
+   * relationships are not interpreted as null.
    *
    * ```js
    * app.model('user').update('1', {
-   *   name: 'Dylan Slack',
+   *   name: 'Miguel Oller',
    * }).then(user => {
    *   // Resource
    * });
    * ```
    *
    * @async
-   * @param {String} id - The ID of the resource to update.
+   * @param {String} id
    * @param {Object} data
    * @returns {Resource}
    * @throws {AdapterError}
+   *
+   * @todo Do something with the Resource in the example.
    */
   update(id, data) {
   }
 
   /**
-   * Deletes a record from the database and resolves to true if the operation
-   * succeeded.
+   * Deletes a record from the database and resolves to true if the operation succeeded.
+   *
+   * ```js
+   * app.model('user').delete('1').then(success => {
+   *   console.log('Yay!');
+   * }).catch(err => {
+   *   console.log('Oh no!');
+   * });
+   * ```
    *
    * @async
-   * @param {String} id - The ID of the resource to delete.
+   * @param {String} id
    * @returns {Boolean}
    * @throws {AdapterError}
    */

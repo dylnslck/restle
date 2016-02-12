@@ -3,6 +3,7 @@ export default class Router {
   /**
    * Instantiates a Router.
    *
+   * @constructor
    * @param {Object} [options={}]
    * @param {Number} [options.port=5000]
    * @param {String} [options.namespace=api]

@@ -16,11 +16,15 @@
     "jsonapi"
   ],
   "homepage": "https://restle.io/",
+  "main": "build/Restle.js",
+  "files": [ "build/" ],
   "scripts": {
-    "lint": "eslint ./src/**/*.js ./test/**/*.js",
+    "lint": "eslint src test",
     "pretest": "npm run lint",
+    "build": "rimraf build && babel src --out-dir build",
     "test": "babel-node ./test/index.js | faucet",
-    "cover": "babel-node ./node_modules/.bin/babel-istanbul cover ./test/index.js && codecov"
+    "cover": "babel-node ./node_modules/.bin/babel-istanbul cover ./test/index.js && codecov",
+    "prepublish": "npm test && npm run build"
   },
   "devDependencies": {
     "babel-cli": "^6.5.1",
@@ -31,6 +35,7 @@
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^5.0.0",
     "eslint-plugin-react": "^3.16.1",
-    "faucet": "0.0.1"
+    "faucet": "0.0.1",
+    "rimraf": "^2.5.1"
   }
 }

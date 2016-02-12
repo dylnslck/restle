@@ -37,6 +37,7 @@ export default class Restle extends EventEmitter {
    * @param {Object} [options.routes]
    * @param {Number} [options.port=5000]
    * @param {String} [options.namespace='api']
+   * @returns {Restle}
    */
   constructor(options = {}) {
     super();
