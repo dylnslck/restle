@@ -2,10 +2,10 @@
 /** The Model class. */
 export default class Model {
   /**
-   * Instantiates a model instance.
+   * Instantiates a `Model`.
    *
-   * @private
    * @constructor
+   * @private
    * @param {String} name
    * @param {Object} schema
    * @throws {ModelError}
@@ -14,7 +14,7 @@ export default class Model {
   }
 
   /**
-   * Finds resources that match the `options` criteria.
+   * Finds resources that match the criteria in `options`.
    *
    * The `options` argument allows for pagination, sorting, sparse fieldsets, filtering and related
    * resource inclusion. These data fetching mechanisms are defined in the
@@ -33,7 +33,7 @@ export default class Model {
    * 7. **$in** - includes
    *
    * The omission of an operator, such as the `country` filter in the example below invokes the
-   * '$eq' operator by default.
+   * `$eq` operator by default.
    *
    * ```js
    * app.model('user').find({
@@ -130,7 +130,7 @@ export default class Model {
 
   /**
    * Persists a record in the database and creates a resource. The data object must be a flattened
-   * JSON with attributes and relationships, which are represented by ids.
+   * JSON with attributes and relationships which are represented by ids.
    *
    * ```js
    * app.model('user').create({

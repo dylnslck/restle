@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 export default class Resource {
   /**
-   * Instantiates a Resource.
+   * Instantiates a `Resource`.
    *
    * @constructor
    * @private
@@ -12,26 +12,30 @@ export default class Resource {
   }
 
   /**
-   * Returns the resource(s) related to the resource. If the relationship's multiplicity is many, it
-   * will return a ResourceArray, and if the relationship's multiplicity is one, it will return a
-   * Resource.
+   * Returns the resource(s) related to this resource. If the relationship's multiplicity is `many`,
+   * it will return a `ResourceArray`, and if the relationship's multiplicity is `one`, it will
+   * return a `Resource`.
    *
    * ```js
    * // pretend user `1` has a ton of pets
-   * user.relationship('pets').then(pets => {
-   *   // ResourceArray
+   * app.model('user').findResource('1').then(user =>
+   *   user.relationship('pets')
+   * ).then(pets => {
+   *    // ResourceArray
    * });
    *
    * // pretend user `1` has a company
-   * user.relationship('company').then(company => {
+   * app.model('user').findResource('1').then(user =>
+   *   user.relationship('company')
+   * ).then(company => {
    *   // Resource
-   * });
+   * })
    * ```
    *
    * @async
    * @param {String} relationship
    * @returns {Resource|ResourceArray}
-   * @throws {RelationshipError}
+   * @throws {RelationshipError|AdapterError}
   */
   relationship(relationship) {
   }
@@ -40,11 +44,13 @@ export default class Resource {
    * Returns the value of the resource's attribute.
    *
    * ```js
-   * const name = user.attribute('name'); // Bob
+   * app.model('user').findResource('1').then(user =>
+   *   console.log(user.attribute('name'));
+   * )
    * ```
    *
    * @param {String} attribute
-   * @returns {String|Number|Boolean|Date}
+   * @returns {*}
    * @throws {AttributeError}
    */
   attribute(attribute) {
@@ -55,13 +61,15 @@ export default class Resource {
    * relationships, which are represented by ids.
    *
    * ```js
-   * user.update({
-   *   name: 'Billy',
-   *   pets: [ '3', '5' ],
-   *   company: '5',
-   * }).then(billy => {
+   * app.model('user').findResource('1').then(user =>
+   *   user.update({
+   *     name: 'Billy',
+   *     pets: ['3', '5'],
+   *     company: '5',
+   *   })
+   * ).then(billy => {
    *   // Resource
-   * });
+   * })
    * ```
    *
    * @async
@@ -76,9 +84,11 @@ export default class Resource {
    * Deletes the resource from the appropriate persistence layer.
    *
    * ```js
-   * user.delete().then(success => {
+   * app.model('user').findResource('1').then(user =>
+   *   user.delete()
+   * ).then(success => {
    *   // Boolean
-   * });
+   * })
    * ```
    *
    * @async

@@ -6,12 +6,11 @@
  */
 export default class ModelArray {
   /**
-   * Instantiates a ModelArray.
+   * Instantiates a `ModelArray`.
    *
    * @constructor
    * @private
    * @param {Model[]} models
-   * @throws {ModelError}
    */
   constructor(models) {
   }
@@ -38,7 +37,7 @@ export default class ModelArray {
    * @async
    * @param {...modelCallback}
    * @returns {Object}
-   * @throws {AdapterError}
+   * @throws {Error}
    *
    * @todo Do something with the results in the example.
    */
