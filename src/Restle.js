@@ -8,7 +8,7 @@ import { EventEmitter } from 'events';
  */
 export default class Restle extends EventEmitter {
   /**
-   * Instantiates a Restle app.
+   * Instantiates a `Restle` app.
    *
    * ```js
    * import Restle from 'restle';
@@ -37,15 +37,13 @@ export default class Restle extends EventEmitter {
    * @param {Object} [options.routes]
    * @param {Number} [options.port=5000]
    * @param {String} [options.namespace='api']
-   * @returns {Restle}
    */
   constructor(options = {}) {
     super();
   }
 
   /**
-   * Returns a Model instance with the matching name from Restle's model
-   * registry.
+   * Returns a Model instance with the matching name from Restle's model registry.
    *
    * ```js
    * const model = app.model('user');
@@ -58,9 +56,9 @@ export default class Restle extends EventEmitter {
   }
 
   /**
-   * Registers all the schemas and instantiates Restle's model registry. If the
-   * schemas key is missing from the constructor options argument, then this
-   * method must be called externally before the app will be ready.
+   * Registers all the schemas and instantiates Restle's model registry. If the schemas key is
+   * missing from the constructor options argument, then this method must be called externally
+   * before the app will be ready.
    *
    * @param {Object} schemas
    */
@@ -73,8 +71,8 @@ export default class Restle extends EventEmitter {
    * @callback {readyCallback}
    */
   /**
-   * Fires when the app is ready, which means the server is listening and the
-   * schema adapters are done connecting to their respective persistence layers.
+   * Fires when the app is ready, which means the server is listening and the schema adapters are
+   * done connecting to their respective persistence layers.
    *
    * @param {readyCallback} cb
    */
@@ -86,9 +84,9 @@ export default class Restle extends EventEmitter {
    * @todo Complete the parameters for this callback.
    */
   /**
-   * Fires before a request touches the adapter. If this function takes one
-   * argument, then the callback is fired before every request. This is an
-   * opportunity to perform things like authentication and logging.
+   * Fires before a request touches the adapter. If this function takes one argument, then the
+   * callback is fired before every request. This is an opportunity to perform things like
+   * authentication and logging.
    *
    * ```js
    * app.before((...) => {
@@ -113,10 +111,9 @@ export default class Restle extends EventEmitter {
    * @todo Complete the parameters for this callback.
    */
   /**
-   * Fires after a request returns from the adapter. If this function takes one
-   * argument, then the callback is fired after every request. This is an
-   * opportunity to perform any last minute changes before data is sent back
-   * to the client.
+   * Fires after a request returns from the adapter. If this function takes one argument, then the
+   * callback is fired after every request. This is an opportunity to perform any last minute
+   * changes before data is sent back to the client.
    *
    * ```js
    * app.after((...) => {

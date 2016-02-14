@@ -12,30 +12,26 @@ export default class Resource {
   }
 
   /**
-   * Returns the resource(s) related to this resource. If the relationship's multiplicity is `many`,
-   * it will return a `ResourceArray`, and if the relationship's multiplicity is `one`, it will
-   * return a `Resource`.
+   * Returns the resource(s) related to the resource. If the relationship's multiplicity is many, it
+   * will return a ResourceArray, and if the relationship's multiplicity is one, it will return a
+   * Resource.
    *
    * ```js
    * // pretend user `1` has a ton of pets
-   * app.model('user').findResource('1').then(user =>
-   *   user.relationship('pets')
-   * ).then(pets => {
-   *    // ResourceArray
+   * user.relationship('pets').then(pets => {
+   *   // ResourceArray
    * });
    *
    * // pretend user `1` has a company
-   * app.model('user').findResource('1').then(user =>
-   *   user.relationship('company')
-   * ).then(company => {
+   * user.relationship('company').then(company => {
    *   // Resource
-   * })
+   * });
    * ```
    *
    * @async
    * @param {String} relationship
    * @returns {Resource|ResourceArray}
-   * @throws {RelationshipError|AdapterError}
+   * @throws {RelationshipError}
   */
   relationship(relationship) {
   }
@@ -44,13 +40,11 @@ export default class Resource {
    * Returns the value of the resource's attribute.
    *
    * ```js
-   * app.model('user').findResource('1').then(user =>
-   *   console.log(user.attribute('name'));
-   * )
+   * const name = user.attribute('name'); // Bob
    * ```
    *
    * @param {String} attribute
-   * @returns {*}
+   * @returns {String|Number|Boolean|Date}
    * @throws {AttributeError}
    */
   attribute(attribute) {
@@ -61,15 +55,13 @@ export default class Resource {
    * relationships, which are represented by ids.
    *
    * ```js
-   * app.model('user').findResource('1').then(user =>
-   *   user.update({
-   *     name: 'Billy',
-   *     pets: ['3', '5'],
-   *     company: '5',
-   *   })
-   * ).then(billy => {
+   * user.update({
+   *   name: 'Billy',
+   *   pets: [ '3', '5' ],
+   *   company: '5',
+   * }).then(billy => {
    *   // Resource
-   * })
+   * });
    * ```
    *
    * @async
@@ -84,11 +76,9 @@ export default class Resource {
    * Deletes the resource from the appropriate persistence layer.
    *
    * ```js
-   * app.model('user').findResource('1').then(user =>
-   *   user.delete()
-   * ).then(success => {
+   * user.delete().then(success => {
    *   // Boolean
-   * })
+   * });
    * ```
    *
    * @async
@@ -105,13 +95,22 @@ export default class Resource {
    * `ResourceArray`.
    *
    * ```js
-   * // give all the pets to user `1`
-   * app.model('user', 'pets').each(
-   *   user => user.findResource('1'),
-   *   pets => pets.find()
-   * ).then(results =>
-   * 	results.user.put('pets', results.pets)
-   * ).then(user => {
+   * app.model('user', 'animal:pets').map({
+   *   user(model) {
+   *     // model === app.model('user')
+   *     return model.findResource('1');
+   *   },
+   *
+   *   pets(model) {
+   *     // model === app.model('animal')
+   *     return model.find({
+   *       page: { offset: 20, limit: 40 },
+   *       filter: { age: 5 },
+   *     });
+   *   },
+   * }).then(results => {
+   *   return results.user.put('pets', pets);
+   * }).then(user => {
    *   // Resource
    * });
    * ```
@@ -137,13 +136,22 @@ export default class Resource {
    * and empty array if its `multiplicity` is `many`.
    *
    * ```js
-   * // give all the pets to user `1`
-   * app.model('user', 'pets').each(
-   *   user => user.findResource('1'),
-   *   pets => pets.find()
-   * ).then(results =>
-   * 	results.user.pop('pets', results.pets)
-   * ).then(user => {
+   * app.model('user', 'animal:pets').map({
+   *   user(model) {
+   *     // model === app.model('user')
+   *     return model.findResource('1');
+   *   },
+   *
+   *   pets(model) {
+   *     // model === app.model('animal')
+   *     return model.find({
+   *       page: { offset: 20, limit: 40 },
+   *       filter: { age: 5 },
+   *     });
+   *   },
+   * }).then(results => {
+   *   return results.user.pop('pets', pets);
+   * }).then(user => {
    *   // Resource
    * });
    * ```
