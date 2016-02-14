@@ -1,9 +1,5 @@
 /* eslint-disable no-unused-vars */
-/**
- * The ModelArray class.
- *
- * @todo Think about iterator.
- */
+/** The ModelArray class. */
 export default class ModelArray {
   /**
    * Instantiates a `ModelArray`.
@@ -16,7 +12,7 @@ export default class ModelArray {
   }
 
   /**
-   * Returns an object of values returned by each `modelCallback`.
+   * Returns an object of values returned by each function in `methods`.
    *
    * ```js
    * app.model('user', 'animal:pets').map({
@@ -24,7 +20,6 @@ export default class ModelArray {
    *     // model === app.model('user')
    *     return model.findResource('1');
    *   },
-   *
    *   pets(model) {
    *     // model === app.model('animal')
    *     return model.find({
@@ -36,7 +31,7 @@ export default class ModelArray {
    *   const user = results.user; // Resource
    *   const pets = results.pets; // ResourceArray
    *
-   *   return results.user.put('pets', pets);
+   *   return results.user.put({ pets });
    * }).then(user => {
    *   // Resource
    * });
@@ -45,9 +40,10 @@ export default class ModelArray {
    * @async
    * @param {Object} methods
    * @returns {Object}
-   * @throws {Error}
    *
+   * @todo Throws
    * @todo Do something with the results in the example.
+   * @todo Better name for `methods` argument.
    */
   map(methods) {
   }
@@ -56,18 +52,22 @@ export default class ModelArray {
    * Callback called on each model iteration.
    *
    * @callback {modelCallback}
+   * @param {Model} model
    */
   /**
    * Iterates over the models.
    *
    * ```js
-   * app.model('user', 'animal').each(model => model.find()).then(resources => {
-   *   // ResourceArray
+   * app.model('user', 'animal').each(model => {
+   *   // do whatever you want!
    * });
    * ```
    *
+   * @see Array#forEach
    * @param {modelCallback} cb
-   * @return {[type]} [description]
+   *
+   * @todo Throws
+   * @todo Do something in the example.
    */
   each(cb) {
   }

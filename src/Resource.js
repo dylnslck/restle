@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/** The Resource class. */
 export default class Resource {
   /**
    * Instantiates a `Resource`.
@@ -12,18 +13,62 @@ export default class Resource {
   }
 
   /**
-   * Returns the resource(s) related to the resource. If the relationship's multiplicity is many, it
-   * will return a ResourceArray, and if the relationship's multiplicity is one, it will return a
-   * Resource.
+   * Returns the value of the resource's attribute.
+   *
+   * ```js
+   * app.model('user').findOne({ filter: { name: 'Bob' } }).then(user => {
+   *   console.log(user.attribute('name')); // Bob
+   * });
+   * ```
+   *
+   * @param {String} name
+   * @returns {*}
+   *
+   * @todo Throws
+   */
+  attribute(name) {
+  }
+
+  /**
+   * Returns the value of the resource's relationship. If the relationship's multiplicity is `many`,
+   * it will return an array of strings, and if the relationship's multiplicity is `one`, it will
+   * return a string.
+   *
+   * ```js
+   * app.model('user').findOne({ filter: { company: '1' } }).then(user => {
+   *   console.log(user.relationship('company')); // '1'
+   * });
+   *
+   * app.model('user').findOne({ filter: { pets: ['3', '5'] } }).then(user => {
+   *   console.log(user.relationship('pets')); // ['3', '5']
+   * });
+   * ```
+   *
+   * @param {String} name
+   * @returns {String|String[]}
+   *
+   * @todo Throws
+   */
+  relationship(name) {
+  }
+
+  /**
+   * Returns the resource(s) related to the resource. If the relationship's multiplicity is `many`,
+   * it will return a `ResourceArray`, and if the relationship's multiplicity is `one`, it will
+   * return a `Resource`.
    *
    * ```js
    * // pretend user `1` has a ton of pets
-   * user.relationship('pets').then(pets => {
+   * app.model('user').findResource('1').then(user => {
+   *   return user.fetch('pets');
+   * }).then(pets => {
    *   // ResourceArray
    * });
    *
    * // pretend user `1` has a company
-   * user.relationship('company').then(company => {
+   * app.model('user').findResource('1').then(user => {
+   *   return user.fetch('company');
+   * }).then(company => {
    *   // Resource
    * });
    * ```
@@ -31,23 +76,11 @@ export default class Resource {
    * @async
    * @param {String} relationship
    * @returns {Resource|ResourceArray}
-   * @throws {RelationshipError}
-  */
-  relationship(relationship) {
-  }
-
-  /**
-   * Returns the value of the resource's attribute.
    *
-   * ```js
-   * const name = user.attribute('name'); // Bob
-   * ```
-   *
-   * @param {String} attribute
-   * @returns {String|Number|Boolean|Date}
-   * @throws {AttributeError}
+   * @todo Throws
+   * @todo Do something with the Resource in the example.
    */
-  attribute(attribute) {
+  fetch(relationship) {
   }
 
   /**
@@ -55,12 +88,15 @@ export default class Resource {
    * relationships, which are represented by ids.
    *
    * ```js
-   * user.update({
-   *   name: 'Billy',
-   *   pets: [ '3', '5' ],
-   *   company: '5',
-   * }).then(billy => {
-   *   // Resource
+   * app.model('user').findOne({ filter: { name: 'Bob' } }).then(user => {
+   *   return user.update({
+   *     name: 'Billy',
+   *     pets: ['3', '5'],
+   *     company: '5',
+   *   });
+   * }).then(user => {
+   *   console.log(user.attribute('name')); // Billy
+   *   console.log(user.relationship('pets')); // ['3', '5']
    * });
    * ```
    *
@@ -76,8 +112,12 @@ export default class Resource {
    * Deletes the resource from the appropriate persistence layer.
    *
    * ```js
-   * user.delete().then(success => {
-   *   // Boolean
+   * app.model('user').findOne({ filter: { name: 'Bob' } }).then(user => {
+   *   return user.delete();
+   * }).then(success => {
+   *   console.log(success); // true
+   * }).catch(err => {
+   *   console.log(err);
    * });
    * ```
    *
@@ -89,81 +129,74 @@ export default class Resource {
   }
 
   /**
-   * Sets the relationship to `target`. If `relationship` has a multiplicity of `one`, then `target`
-   * can be either a string id or `Resource`. If `relationship` has a multiplicity of `many`, then
-   * `target` can include everything from `one` including an array of string ids or a
-   * `ResourceArray`.
+   * Sets the relationship to the members of `target`. If the member has a multiplicity of `one`,
+   * then the value of the member can be either a string id or a `Resource`. If the member has a
+   * multiplicity of `many`, then the value of the member can be a string id, an array of string
+   * ids, a `Resource`, or a `ResourceArray`.
    *
    * ```js
+   * // let's give user `1` all the pets that are 5 years or younger
    * app.model('user', 'animal:pets').map({
    *   user(model) {
    *     // model === app.model('user')
    *     return model.findResource('1');
    *   },
-   *
    *   pets(model) {
    *     // model === app.model('animal')
    *     return model.find({
-   *       page: { offset: 20, limit: 40 },
-   *       filter: { age: 5 },
+   *       filter: { age: { $lte: 5 } },
    *     });
    *   },
    * }).then(results => {
-   *   return results.user.put('pets', pets);
+   *   return results.user.put({ pets: results.pets });
    * }).then(user => {
    *   // Resource
    * });
    * ```
    *
    * @async
-   * @param {String} relationship
-   * @param {...Resource|ResourceArray|String|String[]} target
+   * @param {Object} target
    * @returns {Resource}
-   * @throws {AdapterError|RelationshipError}
    *
+   * @todo Throws
    * @todo Do something with the Resource in the example.
    */
-  put(relationship, target) {
+  put(target) {
   }
 
   /**
-   * Removes `target` from `relationship`. If `relationship` has a multiplicity of `one`, then
-   * `target` can be either a string id or `Resource`. If `relationship` has a multiplicity of
-   * `many`, then `target` can include everything from `one` including an array of string ids or a
-   * `ResourceArray`.
-   *
-   * If `target` is undefined, then `relationship` will become null if its multiplicity is `one` or
-   * and empty array if its `multiplicity` is `many`.
+   * Removes this reource's relationships in the members of `target`. If the relationships have a
+   * multiplicity of `one`, then the value of the member can be either a string id or a `Resource`.
+   * If the relationships have a multiplicity of `many`, then the value of the member can be a
+   * string id, an array of string ids, a `Resource`, or a `ResourceArray`.
    *
    * ```js
+   * // now let's take away all the pets that are older than 5 years from user `1`
    * app.model('user', 'animal:pets').map({
    *   user(model) {
    *     // model === app.model('user')
    *     return model.findResource('1');
    *   },
-   *
    *   pets(model) {
    *     // model === app.model('animal')
    *     return model.find({
-   *       page: { offset: 20, limit: 40 },
-   *       filter: { age: 5 },
+   *       filter: { age: { $gt: 5 } },
    *     });
    *   },
    * }).then(results => {
-   *   return results.user.pop('pets', pets);
+   *   return results.user.pop({ pets: results.pets });
    * }).then(user => {
    *   // Resource
    * });
    * ```
    *
    * @async
-   * @param {String} relationship
-   * @param {...Resource|ResourceArray|String|String[]} [target]
+   * @param {Object} target
    * @returns {Resource}
-   * @throws {AdapterError|RelationshipError}
    *
+   * @todo Throws
    * @todo Do something with the Resource in the example.
    */
-  pop(relationship, target) {
+  pop(target) {
   }
 }

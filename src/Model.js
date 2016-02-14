@@ -6,11 +6,19 @@ export default class Model {
    *
    * @constructor
    * @private
-   * @param {String} name
+   * @param {String} type
    * @param {Object} schema
-   * @throws {ModelError}
    */
-  constructor(name, schema) {
+  constructor(type, schema) {
+  }
+
+  /**
+   * Adds an alias to this model.
+   *
+   * @private
+   * @param {String} name
+   */
+  alias(name) {
   }
 
   /**
@@ -31,6 +39,8 @@ export default class Model {
    * 5. **$eq** - equal to
    * 6. **$neq** - not equal to
    * 7. **$in** - includes
+   * 8. **$nin** - excludes
+   * @todo Set theory
    *
    * The omission of an operator, such as the `country` filter in the example below invokes the
    * `$eq` operator by default.
@@ -56,6 +66,7 @@ export default class Model {
    * @returns {ResourceArray}
    * @throws {AdapterError}
    *
+   * @todo Throws
    * @todo Do something with the ResourceArray in the example.
    */
   find(options = {}) {
@@ -68,7 +79,8 @@ export default class Model {
    * @async
    * @param {Object} [options={}]
    * @returns {Resource}
-   * @throws {AdapterError}
+   *
+   * @todo Throws
    */
   findOne(options = {}) {
   }
@@ -85,8 +97,8 @@ export default class Model {
    * @async
    * @param {String} id
    * @returns {Resource}
-   * @throws {AdapterError}
    *
+   * @todo Throws
    * @todo Do something with the Resource in the example.
    */
   findResource(id) {
@@ -121,8 +133,8 @@ export default class Model {
    * @param {String} relationship - The relationship to the parent.
    * @param {Object} [options={}]
    * @returns {Resource|ResourceArray}
-   * @throws {AdapterError|RelationshipError}
    *
+   * @todo Throw
    * @todo Do something with the Resource and ResourceArray in the example.
    */
   findRelated(id, relationship, options = {}) {
@@ -147,8 +159,8 @@ export default class Model {
    * @async
    * @param {Object} data
    * @returns {Resource}
-   * @throws {AdapterError}
    *
+   * @todo Throws
    * @todo Do something with the Resource in the example.
    */
   create(data) {
@@ -171,8 +183,8 @@ export default class Model {
    * @param {String} id
    * @param {Object} data
    * @returns {Resource}
-   * @throws {AdapterError}
    *
+   * @todo Throws
    * @todo Do something with the Resource in the example.
    */
   update(id, data) {
@@ -183,17 +195,30 @@ export default class Model {
    *
    * ```js
    * app.model('user').delete('1').then(success => {
-   *   console.log('Yay!');
+   *   console.log(success); // true
    * }).catch(err => {
-   *   console.log('Oh no!');
+   *   console.log(err);
    * });
    * ```
    *
    * @async
    * @param {String} id
    * @returns {Boolean}
-   * @throws {AdapterError}
+   *
+   * @todo Throws
    */
   delete(id) {
+  }
+
+  /**
+   * Sideloads a json object by retrieving relevant data from relationship ids.
+   *
+   * @private
+   * @async
+   * @param {Object} data
+   * @returns {Object}
+   * @throws {AdapterError}
+   */
+  populate(data) {
   }
 }

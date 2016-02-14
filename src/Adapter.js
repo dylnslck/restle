@@ -1,5 +1,9 @@
 /* eslint-disable no-unused-vars */
-/** Adapter class. */
+/**
+ * The Adapter interface
+ *
+ * @interface
+ */
 export default class Adapter {
   /**
    * Instantiates an `Adapter`.
@@ -25,8 +29,8 @@ export default class Adapter {
   /**
    * Disconnect from the persistence layer.
    *
-   * @async
    * @private
+   * @async
    * @returns {Boolean}
    * @throws {AdapterError}
    */
@@ -34,33 +38,36 @@ export default class Adapter {
   }
 
   /**
-   * This method retrieves raw records from the persistence layer with matching ids as 'ids', or
-   * all records if `ids` is undefined.
+   * This method retrieves raw records from the persistence layer with matching 'ids', or all
+   * records if `ids` is undefined.
    *
-   * @async
    * @private
-   * @param {Model} model
-   * @param {String|String[]} ids
+   * @async
+   * @param {String} type
+   * @param {String|String[]} [ids]
    * @returns {Object|Object[]}
+   *
+   * @todo Throws
    */
-  retrieve(model, ids) {
+  retrieve(type, ids) {
   }
 
   /**
    * Finds records from the persistence layer that match the `options` criteria. The `options`
-   * object is the same argument that `Model.find` includes. This must return an array of sideloaded
+   * object is the same argument that `Model#find` includes. This must return an array of sideloaded
    * objects, and the resulting array must have a `count` property equal to the number of records
    * pre-pagination.
    *
-   * @see Model.find
-   * @async
+   * @see Model#find
    * @private
-   * @param {Model} model
+   * @async
+   * @param {String} type
    * @param {Object} [options={}]
    * @returns {Object[]}
-   * @throws {AdapterError}
+   *
+   * @todo Throws
    */
-  find(model, options = {}) {
+  find(type, options = {}) {
   }
 
   /**
@@ -69,38 +76,42 @@ export default class Adapter {
    *
    * @async
    * @private
-   * @param {Model} model
+   * @param {String} type
    * @param {Object} data
-   * @return {Object}
-   * @throws {AdapterError}
+   * @returns {Object}
+   *
+   * @todo Throws
    */
-  create(model, data) {
+  create(type, data) {
   }
 
   /**
    * Updates a record on the persistence layer. This method's responsibility is to update the record
    * then return the sideloaded JSON.
    *
-   * @async
    * @private
-   * @param {Model} model
+   * @async
+   * @param {String} type
    * @param {Object} data
    * @param {String} id
-   * @return {Object}
-   * @throws {AdapterError}
+   * @return {Object}\
+   *
+   * @todo Throws
    */
-  update(model, id, data) {
+  update(type, id, data) {
   }
 
   /**
    * Deletes a record from the persistence layer.
    *
-   * @async
    * @private
-   * @param {Model} model
+   * @async
+   * @param {String} type
    * @param {String} id
    * @returns {Boolean}
+   *
+   * @todo Throws
    */
-  delete(model, id) {
+  delete(type, id) {
   }
 }
