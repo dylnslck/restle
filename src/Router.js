@@ -1,4 +1,5 @@
 /* eslint-disable no-unused-vars */
+/** The Router class. */
 export default class Router {
   /**
    * Instantiates a `Router`.
@@ -7,19 +8,20 @@ export default class Router {
    * @private
    * @param {Object} [options={}]
    * @param {Number} [options.port=5000]
-   * @param {String} [options.namespace=api]
-   * @param {String} [options.version=v1]
+   * @param {String} [options.namespace='']
+   * @param {Serializer} [options.serializer='require('./Serializer')']
    */
-  constructor(options = {}) {
+  constructor(options = { port: 5000, namespace: '', serializer: require('./Serializer') }) {
   }
 
   /**
    * Returns a resolved promise when the router is up and running, i.e. an Express HTTP server has
    * initialized or a WebSocket handshake.
    *
-   * @async
    * @private
-   * @return {Boolean}
+   * @async
+   *
+   * @todo Throws
    */
   connect() {
   }
@@ -28,20 +30,29 @@ export default class Router {
    * Returns a resolved promise when the router has successfully disconnected, i.e. an Express HTTP
    * server is closed or a WebSocket connection is broken.
    *
-   * @async
    * @private
-   * @return {Boolean}
+   * @async
    */
   disconnect() {
   }
-
+  /**
+   * @callback routerCallback
+   *
+   * @see {@link http://expressjs.com/en/4x/api.html}
+   * @param {Object} req
+   * @param {Object} res
+   * @param {Function} next
+   */
   /**
    * Sets up Express routes.
    *
    * @private
-   * @param  {[type]} routes [description]
-   * @return {[type]}        [description]
+   * @param {String} route
+   * @param {String} method
+   * @param {routerCallback} cb
+   *
+   * @todo Throws
    */
-  setup(routes) {
+  mount(route, method, cb) {
   }
 }

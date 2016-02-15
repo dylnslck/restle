@@ -20,7 +20,6 @@ export default class Adapter {
    *
    * @async
    * @private
-   * @returns {Boolean}
    * @throws {AdapterError}
    */
   connect() {
@@ -31,7 +30,6 @@ export default class Adapter {
    *
    * @private
    * @async
-   * @returns {Boolean}
    * @throws {AdapterError}
    */
   disconnect() {

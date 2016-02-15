@@ -1,25 +1,19 @@
 /* eslint-disable no-unused-vars */
+/**
+ * The Serializer interface.
+ *
+ * @interface
+ */
 export default class Serializer {
-  /**
-   * Instantiates a `Serializer`.
-   *
-   * @constructor
-   * @private
-   * @param {Object} [options={}]
-   * @param {Number} [options.port=5000]
-   * @param {String} [options.namespace='api']
-   */
-  constructor(options = {}) {
-  }
-
   /**
    * Serializes a `Resource` into an object that the client can consume.
    *
    * @private
    * @param {Resource} resource - The entry node on the resource graph.
+   * @param {Object} [options] - Data that can be helpful when serializing.
    * @returns {Object} - Serialized response.
    */
-  serialize(resource) {
+  serialize(resource, options = {}) {
   }
 
   /**

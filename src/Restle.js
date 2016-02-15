@@ -22,14 +22,18 @@ export default class Restle extends EventEmitter {
    * @constructor
    * @param {Object} [options={}]
    * @param {Object} [options.schemas]
-   * @param {Adapter} [options.schemas.adapter]
+   * @param {Adapter} [options.schemas.adapter=require('./Adapter')]
    * @param {Object} [options.routes]
    * @param {Number} [options.routes.port=5000]
-   * @param {String} [options.routes.namespace='api']
+   * @param {String} [options.routes.namespace='']
+   * @param {Serializer} [options.routes.serializer=require('./Serializer')]
    *
    * @todo Throws
    */
-  constructor(options = {}) {
+  constructor(options = {
+    schemas: { adapter: require('./Adapter') },
+    routes: { port: 5000, namespace: '', serializer: require('./Serialier') },
+  }) {
     super();
   }
 
@@ -59,7 +63,7 @@ export default class Restle extends EventEmitter {
   }
 
   /**
-   * Fires before a request touches the adapter. If this function takes one argument, then the
+   * Fires a request soon as the router receives data. If this function takes one argument, then the
    * it is fired before every request. This is an opportunity to perform things like authentication
    * and logging.
    *
@@ -82,8 +86,8 @@ export default class Restle extends EventEmitter {
   }
 
   /**
-   * Fires after a request returns from the adapter. If this function takes one argument, then the
-   * it is fired after every request. This is an opportunity to perform any last minute changes
+   * Fires right before data is delivered to the client. If this function takes one argument, then
+   * the it is fired after every request. This is an opportunity to perform any last minute changes
    * before data is sent back to the client.
    *
    * ```js
@@ -102,5 +106,14 @@ export default class Restle extends EventEmitter {
    * @todo Figure out the arguments for the callbacks.
    */
   after(event = '', cb) {
+  }
+
+  /**
+   * Disconnects all the adapters and closes the router.
+   *
+   * @async
+   */
+  disconnect() {
+
   }
 }
