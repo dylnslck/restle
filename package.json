@@ -34,7 +34,6 @@
     "codecov": "^1.0.1",
     "eslint": "^1.10.3",
     "eslint-config-airbnb": "^5.0.0",
-    "eslint-plugin-react": "^3.16.1",
     "faucet": "0.0.1",
     "rimraf": "^2.5.1"
   }
