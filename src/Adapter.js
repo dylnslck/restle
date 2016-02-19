@@ -6,20 +6,10 @@
  */
 export default class Adapter {
   /**
-   * Instantiates an `Adapter`.
-   *
-   * @constructor
-   * @private
-   * @param {Object} [options={}]
-   */
-  constructor(options = {}) {
-  }
-
-  /**
    * Connect to the persistence layer.
    *
-   * @async
    * @private
+   * @async
    * @throws {AdapterError}
    */
   connect() {
@@ -36,36 +26,37 @@ export default class Adapter {
   }
 
   /**
+   * Returns an array of objects representing records from the persistence layer of `type` that
+   * match the `options` criteria. Those objects will be sideloaded according to the relationships
+   * specified in `include`. The `options` object is the same in @link{Model#find}.
+   *
+   * @private
+   * @async
+   * @param {String} type
+   * @param {(String|String[])} include
+   * @param {Object} [options={}]
+   * @returns {Object[]}
+   * @throws {AdapterError}
+   */
+  find(type, include, options = {}) {
+  }
+
+  findOne() {
+  }
+
+  /**
    * This method retrieves raw records from the persistence layer with matching 'ids', or all
    * records if `ids` is undefined.
    *
    * @private
    * @async
    * @param {String} type
-   * @param {String|String[]} [ids]
-   * @returns {Object|Object[]}
+   * @param {String} id
+   * @returns {Object}
    *
    * @todo Throws
    */
-  retrieve(type, ids) {
-  }
-
-  /**
-   * Finds records from the persistence layer that match the `options` criteria. The `options`
-   * object is the same argument that `Model#find` includes. This must return an array of sideloaded
-   * objects, and the resulting array must have a `count` property equal to the number of records
-   * pre-pagination.
-   *
-   * @see Model#find
-   * @private
-   * @async
-   * @param {String} type
-   * @param {Object} [options={}]
-   * @returns {Object[]}
-   *
-   * @todo Throws
-   */
-  find(type, options = {}) {
+  fetchRecord(type, id, include) {
   }
 
   /**
@@ -80,7 +71,7 @@ export default class Adapter {
    *
    * @todo Throws
    */
-  create(type, data) {
+  create(type, data, include) {
   }
 
   /**
@@ -92,11 +83,11 @@ export default class Adapter {
    * @param {String} type
    * @param {Object} data
    * @param {String} id
-   * @return {Object}\
+   * @return {Object}
    *
    * @todo Throws
    */
-  update(type, id, data) {
+  update(type, id, data, include) {
   }
 
   /**

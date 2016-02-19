@@ -86,25 +86,6 @@ export default class Model {
   }
 
   /**
-   * Retrieves the resource corresponding to `id`.
-   *
-   * ```js
-   * app.model('user').findResource('1').then(user => {
-   *   // Resource
-   * });
-   * ```
-   *
-   * @async
-   * @param {String} id
-   * @returns {Resource}
-   *
-   * @todo Throws
-   * @todo Do something with the Resource in the example.
-   */
-  findResource(id) {
-  }
-
-  /**
    * Retrieves the resource(s) related to a particular resource identified by `id` according to
    * `relationship`. A relationship with a multiplicity of `many` returns a `ResourceArray`, and a
    * relationship with a multiplicity of `one` returns a `Resource`.
@@ -138,6 +119,25 @@ export default class Model {
    * @todo Do something with the Resource and ResourceArray in the example.
    */
   findRelated(id, relationship, options = {}) {
+  }
+
+  /**
+   * Retrieves the resource corresponding to `id`.
+   *
+   * ```js
+   * app.model('user').findResource('1').then(user => {
+   *   // Resource
+   * });
+   * ```
+   *
+   * @async
+   * @param {String} id
+   * @returns {Resource}
+   *
+   * @todo Throws
+   * @todo Do something with the Resource in the example.
+   */
+  fetchResource(id) {
   }
 
   /**
