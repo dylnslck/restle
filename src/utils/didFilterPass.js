@@ -1,4 +1,5 @@
 import isDeepTruthy from './isDeepTruthy';
+const keys = Object.keys;
 
 function applyOperation(op, expected, value) {
   if (value === undefined) return false;
@@ -33,15 +34,27 @@ function applyOperation(op, expected, value) {
   }
 }
 
+/**
+ * Normalizes a filter operation object.
+ *
+ * ```js
+ * { age: 15 } // transforms into:
+ * { age: { $eq: 15 } }
+ * ```
+ *
+ * @param {Object} object
+ * @returns {Object}
+ */
+function normalize(object) {
+  return typeof object !== 'object'
+    ? { $eq: object }
+    : object;
+}
+
 export default function didFilterPass(object, filter = {}) {
-  return isDeepTruthy(Object.keys(filter).map(key => {
-    const ops = filter[key];
-    return {
-      key,
-      filter: typeof ops !== 'object' ? { $eq: ops } : ops,
-    };
-  }).map(obj => {
-    const ops = obj.filter;
-    return Object.keys(ops).map(op => applyOperation(op, ops[op], object[obj.key]));
+  return isDeepTruthy(keys(filter).map(key => {
+    const ops = normalize(filter[key]);
+
+    return keys(ops).map(op => applyOperation(op, ops[op], object[key]));
   }));
 }
