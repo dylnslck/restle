@@ -1,7 +1,7 @@
 /**
  * CAUTION: Doesn't work for built-in JavaScript objects! (e.g., Date)
  *
- * @param  {*} obj
+ * @param {*} obj
  * @return {*}
  */
 export default function deepClone(obj) {
@@ -11,7 +11,10 @@ export default function deepClone(obj) {
   for (const key in obj) {
     if (obj.hasOwnProperty(key)) {
       const val = obj[key];
-      clone[key] = typeof val === 'object' ? deepClone(val) : val;
+
+      clone[key] = typeof val === 'object'
+        ? deepClone(val)
+        : val;
     }
   }
 

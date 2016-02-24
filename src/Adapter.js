@@ -12,7 +12,7 @@ export default class Adapter {
    *
    * @todo Throws
    */
-  constructor(schemas = {}) {
+  constructor(schemas) {
     // class extension validation
     if (this.constructor === Adapter) throw new Error();
 
@@ -65,13 +65,13 @@ export default class Adapter {
    * @private
    * @async
    * @param {String} type
-   * @param {String[]} [include=[]]
+   * @param {Object} include
    * @param {Object} [options={}]
    * @returns {Object[]}
    *
    * @todo Throws
    */
-  find(type, include = [], options = {}) {
+  find(type, include, options = {}) {
   }
 
   /**
